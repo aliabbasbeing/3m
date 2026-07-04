@@ -1,0 +1,2535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>92pkr Hack Predictor (SERVER)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <meta name="theme-color" content="#232946"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+  <style>
+    :root {
+      --main-bg: #232946;
+      --glass-bg: rgba(34, 38, 70, 0.97);
+      --glass-border: rgba(129, 140, 248, 0.19);
+      --neumorph-shadow1: #1e1b4b;
+      --neumorph-shadow2: #232946;
+      --modal-bg: rgba(23, 25, 38, 0.2);
+      --accent: #818cf8;
+      --trophy-glow: #22c55e;
+      --indigo-glow: #4f46e5;
+    }
+    body {
+      background: linear-gradient(135deg, var(--main-bg) 0%, #15162b 100%);
+      min-height: 100vh;
+    }
+    .glass {
+      background: var(--glass-bg);
+      box-shadow: 0 8px 32px 0 #181b2f66;
+      border-radius: 1.6rem;
+      border: 1.5px solid var(--glass-border);
+      backdrop-filter: blur(17px);
+    }
+    .neumorph {
+      box-shadow:
+        2px 2px 16px var(--neumorph-shadow1),
+        -2px -2px 16px var(--neumorph-shadow2);
+      border-radius: 1.35rem;
+    }
+    .glow-container {
+      background: #17182a;
+      border-radius: 14px;
+      margin-bottom: 8px;
+      padding: 7px 10px 6px 10px;
+      position: relative;
+      opacity: 0;
+      transform: translateY(15px) scale(0.97);
+      transition: opacity 0.5s, transform 0.6s cubic-bezier(.4,2,.6,1);
+    }
+    .glow-container.show {
+      opacity: 1;
+      transform: translateY(0) scale(1.01);
+    }
+    .glow-info { color: #06f1f7; }
+    .glow-label {
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.01em;
+    }
+    .stage-label {
+      font-size: 1em;
+      font-weight: 600;
+      margin-left: 10px;
+      color: #ffd93a;
+    }
+    .glow-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 2px;
+      gap: 5px;
+      font-size: 0.78rem;
+    }
+    .glow-icon {
+      margin-right: 5px;
+      font-size: 0.9rem;
+      vertical-align: middle;
+    }
+    .glow-right {
+      position: absolute;
+      top: 40px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .glow-trophy {
+      color: #20e720;
+      font-size: 1.7rem;
+      filter: drop-shadow(0 0 4px #13ef13cc);
+    }
+    .glow-x {
+      color: #ff4444;
+      font-size: 1.55rem;
+      filter: drop-shadow(0 0 4px #e81c1cbb);
+    }
+    .timer-red {
+      color: #ff5c5c !important;
+      font-weight: bold;
+      text-shadow: 0 0 6px #ff2222;
+      animation: blink 1s steps(2, start) infinite;
+    }
+    @keyframes blink {
+      to { visibility: hidden; }
+    }
+    .prediction-fade {
+      opacity: 0;
+      transform: scale(0.96);
+      transition: opacity 0.5s, transform 0.45s;
+    }
+    .prediction-fade.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+    #currentStreak.text-red-400 {
+      animation: pulse 2s infinite;
+      text-shadow: 0 0 10px rgba(248, 113, 113, 0.5);
+    }
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.7; }
+      100% { opacity: 1; }
+    }
+    .loss-streak-label {
+      font-size: 0.97em;
+      font-weight: 600;
+      margin-left: 10px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .predict-card-small span, .predict-card-small i {
+      font-size: 1em !important;
+    }
+    .predict-card-small .fa-calendar,
+    .predict-card-small .fa-chart-line,
+    .predict-card-small .fa-check-circle {
+      font-size: 1.19em !important;
+    }
+    /* Win Modal */
+    #winModal {
+      transition: opacity 0.45s;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 50;
+    }
+    #winModal.show {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+    #winModal .trophy-glow {
+      font-size: 6.5rem;
+      color: var(--trophy-glow);
+      filter: drop-shadow(0 0 42px #22c55e) drop-shadow(0 0 62px #22c55e55);
+      animation: popTrophy 0.66s cubic-bezier(.38,1.7,.7,1.01);
+      text-shadow: 0 0 12px #22c55e88, 0 0 18px #22c55e66;
+    }
+    @keyframes popTrophy {
+      0% { transform: scale(0.73) rotate(-7deg); opacity: 0.4; }
+      70% { transform: scale(1.2) rotate(4deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    #winModal .modal-celebrate-text {
+      margin-top: 22px;
+      color: #fff;
+      font-size: 2rem;
+      font-weight: bold;
+      letter-spacing: .05em;
+      text-shadow: 0 0 14px #22c55e77, 0 0 12px #232946cc;
+      text-align: center;
+      filter: drop-shadow(0 1px 6px #22c55e44);
+    }
+    /* Welcome Modal */
+    #welcomeModal {
+      transition: opacity 0.5s;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 60;
+    }
+    #welcomeModal.show {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+    #welcomeModal .modal-box {
+      background: rgba(34,38,70,0.99);
+      border-radius: 2rem;
+      box-shadow: 0 0 40px #222a, 0 0 0 3px #818cf8;
+      padding: 2.5rem 2rem 2rem 2rem;
+      min-width: 320px;
+      max-width: 94vw;
+      text-align: center;
+      color: #f3f4f6;
+      border: 1.5px solid #818cf8;
+    }
+    #welcomeModal .modal-title {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #22c55e;
+      letter-spacing: .02em;
+      margin-bottom: 0.7em;
+    }
+    #welcomeModal .modal-sub {
+      color: #a7f3d0;
+      font-size: 1.2rem;
+      margin-bottom: .8em;
+    }
+    #welcomeModal .modal-body {
+      margin-bottom: 1.2em;
+      color: #cbd5e1;
+      font-size: 1.06rem;
+    }
+    #welcomeModal .modal-donate {
+      margin: 1.2em 0 0.7em 0;
+      color: #f59e42;
+      font-size: 1.14rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+    #welcomeModal .whatsapp {
+      color: #25d366;
+      font-weight: bold;
+      margin-top: 0.6em;
+      font-size: 1.2em;
+    }
+    #welcomeModal .close-btn {
+      margin-top: 1.4em;
+      background: #818cf8;
+      color: #fff;
+      padding: 0.6em 1.7em;
+      border-radius: 1.1em;
+      font-size: 1.08em;
+      font-weight: 600;
+      border: none;
+      box-shadow: 0 3px 18px #23294666;
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+    #welcomeModal .close-btn:hover {
+      background: #22c55e;
+      color: #fff;
+    }
+    @media (max-width: 640px) {
+      .glass { padding: 0.5rem !important; }
+      .glow-container { padding: 8px 7px 7px 8px; }
+      .glow-right { right: 9px; top: 40px; }
+      #winModal .trophy-glow { font-size: 3.7rem; }
+      #winModal .modal-celebrate-text { font-size: 1.25rem; }
+      #welcomeModal .modal-box { min-width: 90vw; padding: 1.4rem 0.6rem 1.2rem 0.6rem; }
+      #welcomeModal .modal-title { font-size: 1.3rem; }
+      #welcomeModal .modal-sub { font-size: 1.07rem; }
+      #welcomeModal .modal-donate { font-size: 1rem; }
+    }
+
+    /* MARTINGALE TRACKER */
+    .mg-setup-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px; margin-bottom: 12px;
+    }
+    .mg-field { display: flex; flex-direction: column; gap: 4px; }
+    .mg-lbl {
+      font-family: 'Courier New', monospace;
+      font-size: 0.62rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: #94a3b8;
+    }
+    .mg-input {
+      background: rgba(15,16,32,0.9);
+      border: 1px solid rgba(129,140,248,0.25);
+      border-radius: 8px; padding: 8px 10px;
+      color: #f3f4f6;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem; outline: none;
+      transition: border-color 0.15s;
+    }
+    .mg-input:focus { border-color: #818cf8; }
+    .mg-start-btn {
+      width: 100%; padding: 11px;
+      background: linear-gradient(135deg, #818cf8, #4f46e5);
+      color: #fff; border: none; border-radius: 10px;
+      font-size: 0.8rem; font-weight: 700;
+      letter-spacing: 0.1em; cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .mg-start-btn:hover { opacity: 0.85; }
+    .mg-live-row {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      gap: 8px; margin-bottom: 12px;
+    }
+    @media(max-width:500px){ .mg-live-row { grid-template-columns: repeat(2,1fr); } }
+    .mg-live-card {
+      background: rgba(15,16,32,0.9);
+      border: 1px solid rgba(129,140,248,0.18);
+      border-radius: 10px; padding: 10px 12px; text-align: center;
+    }
+    .mg-bet-card { border-color: rgba(253,224,71,0.35) !important; }
+    .mg-live-lbl {
+      font-family: 'Courier New', monospace;
+      font-size: 0.44rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #94a3b8; margin-bottom: 4px;
+    }
+    .mg-live-val { font-family: 'Courier New', monospace; font-size: 1.05rem; font-weight: 700; }
+    .mg-ladder-lbl {
+      font-family: 'Courier New', monospace;
+      font-size: 0.48rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #94a3b8; margin-bottom: 6px;
+    }
+    .mg-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .mg-chip {
+      font-family: 'Courier New', monospace;
+      font-size: 0.6rem; font-weight: 700;
+      padding: 4px 10px; border-radius: 20px;
+      border: 1px solid rgba(129,140,248,0.18);
+      color: #334155; white-space: nowrap; transition: all 0.2s;
+    }
+    .mg-chip.active {
+      background: rgba(253,224,71,0.15); color: #fde047;
+      border-color: #fde047; font-weight: 900;
+      box-shadow: 0 0 12px rgba(253,224,71,0.38);
+    }
+    .mg-chip.past {
+      background: rgba(248,113,113,0.1); color: #f87171;
+      border-color: rgba(248,113,113,0.25);
+    }
+    .mg-chip.future { color: #2d3748; border-color: rgba(129,140,248,0.1); }
+    .mg-chip-bust {
+      font-family: 'Courier New', monospace;
+      font-size: 0.6rem; font-weight: 700;
+      padding: 4px 10px; border-radius: 20px;
+      border: 1px solid #ef4444; color: #ef4444;
+      background: rgba(239,68,68,0.1);
+      animation: mg-bust-pulse 1.2s infinite; white-space: nowrap;
+    }
+    @keyframes mg-bust-pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+    .mg-warn {
+      border-radius: 8px; padding: 10px 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.62rem; line-height: 1.6; margin-bottom: 12px;
+    }
+    .mg-warn.streak-warn {
+      background: rgba(253,224,71,0.07);
+      border-left: 3px solid #fde047; color: #fde047;
+    }
+    .mg-warn.balance-warn {
+      background: rgba(239,68,68,0.07);
+      border-left: 3px solid #ef4444; color: #ef4444;
+    }
+    .mg-log-scroll {
+      max-height: 190px; overflow-y: auto;
+      border-radius: 8px; border: 1px solid rgba(129,140,248,0.14);
+    }
+    .mg-table { width: 100%; border-collapse: collapse; font-family: 'Courier New', monospace; font-size: 0.6rem; }
+    .mg-table th {
+      padding: 6px 8px; text-align: right; color: #64748b;
+      background: rgba(15,16,32,0.97);
+      border-bottom: 1px solid rgba(129,140,248,0.1);
+      font-size: 0.48rem; letter-spacing: 0.08em;
+      text-transform: uppercase; position: sticky; top: 0; z-index: 1;
+    }
+    .mg-table th:first-child, .mg-table th:nth-child(2), .mg-table th:nth-child(3) { text-align: left; }
+    .mg-table td {
+      padding: 5px 8px; text-align: right;
+      border-bottom: 1px solid rgba(255,255,255,0.03); color: #cbd5e1;
+    }
+    .mg-table td:first-child, .mg-table td:nth-child(2), .mg-table td:nth-child(3) { text-align: left; }
+    .mg-table tr:last-child td { border-bottom: none; }
+    .mg-table tr:hover td { background: rgba(129,140,248,0.03); }
+    .mg-tr-win td:nth-child(3) { color: #22c55e; }
+    .mg-tr-loss td:nth-child(3) { color: #f87171; }
+    .mg-sm-btn {
+      padding: 4px 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.52rem; letter-spacing: 0.08em;
+      background: rgba(15,16,32,0.9);
+      border: 1px solid rgba(129,140,248,0.2);
+      color: #94a3b8; border-radius: 6px; cursor: pointer;
+      transition: all 0.15s; text-transform: uppercase;
+    }
+    .mg-sm-btn:hover { color: #818cf8; border-color: rgba(129,140,248,0.45); }
+    .mg-end-btn:hover { color: #fde047 !important; border-color: rgba(253,224,71,0.4) !important; }
+    .mg-reset-btn:hover { color: #f87171 !important; border-color: rgba(248,113,113,0.35) !important; }
+    .mg-stages-section {
+      background: rgba(15,16,32,0.5);
+      border: 1px solid rgba(129,140,248,0.12);
+      border-radius: 10px; padding: 12px; margin-bottom: 12px;
+    }
+    .mg-stages-hdr {
+      display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;
+    }
+    .mg-stage-inputs-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+    .mg-stage-input-lbl {
+      font-family: 'Courier New', monospace;
+      font-size: 0.48rem; letter-spacing: 0.1em;
+      text-transform: uppercase; margin-bottom: 3px;
+    }
+    .mg-stage-val { width: 76px; text-align: center; padding: 5px 6px !important; font-size: 0.76rem !important; }
+    .mg-autofill-btn { color: #818cf8 !important; border-color: rgba(129,140,248,0.4) !important; }
+    .mg-add-stage-btn { color: #22c55e !important; border-color: rgba(34,197,94,0.35) !important; }
+    .mg-balance-cover { margin-bottom: 8px; }
+    .mg-balance-cover-lbl { font-family:'Courier New',monospace; font-size: 0.54rem; margin-bottom: 4px; }
+    .mg-balance-cover-track { background: rgba(255,255,255,0.05); border-radius: 4px; height: 4px; overflow: hidden; }
+    .mg-balance-cover-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+    .mg-stages-hint { font-family:'Courier New',monospace; font-size: 0.5rem; color: #475569; margin-top: 5px; }
+
+    /* FOCUS MODE */
+    #focusModeBtn {
+      position: fixed; bottom: 22px; right: 18px;
+      z-index: 900; width: 46px; height: 46px;
+      border-radius: 50%;
+      background: rgba(129,140,248,0.12);
+      border: 1px solid rgba(129,140,248,0.38);
+      color: #818cf8; font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, box-shadow 0.15s;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.5);
+    }
+    #focusModeBtn:hover {
+      background: rgba(129,140,248,0.25);
+      box-shadow: 0 0 18px rgba(129,140,248,0.4);
+    }
+    body.focus-mode #focusModeBtn {
+      background: rgba(129,140,248,0.28); border-color: #818cf8;
+    }
+    #focusOverlay {
+      display: none; position: fixed; inset: 0; z-index: 800;
+      background: rgba(8,9,20,0.97);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      flex-direction: column; align-items: center; justify-content: center;
+    }
+    body.focus-mode #focusOverlay { display: flex; }
+    .fm-inner {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 6px;
+      width: 100%; max-width: 420px; padding: 0 24px;
+    }
+    .fm-period {
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem; color: #475569;
+      letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px;
+    }
+    .fm-pred-lbl {
+      font-family: 'Courier New', monospace;
+      font-size: 0.68rem; letter-spacing: 0.2em;
+      color: #475569; text-transform: uppercase;
+    }
+    .fm-pred {
+      font-size: 7rem; font-weight: 900; line-height: 1;
+      letter-spacing: 0.04em; transition: color 0.3s;
+    }
+    .fm-pred.big   { color: #f472b6; text-shadow: 0 0 60px rgba(244,114,182,0.55); }
+    .fm-pred.small { color: #22c55e; text-shadow: 0 0 60px rgba(34,197,94,0.55); }
+    .fm-pred.none  { color: #334155; }
+    .fm-divider { width: 48px; height: 1px; background: rgba(255,255,255,0.08); margin: 14px 0 10px; }
+    .fm-cd-lbl {
+      font-family: 'Courier New', monospace;
+      font-size: 0.68rem; letter-spacing: 0.2em; color: #475569; text-transform: uppercase;
+    }
+    .fm-countdown {
+      font-family: 'Courier New', monospace;
+      font-size: 4.5rem; font-weight: 700; color: #f3f4f6;
+      letter-spacing: 0.06em; transition: color 0.2s;
+    }
+    .fm-countdown.urgent { color: #ef4444; animation: blink 0.5s infinite; }
+    .fm-bet-row { margin-top: 4px; text-align: center; width: 100%; }
+    .fm-bet-lbl {
+      font-family: 'Courier New', monospace;
+      font-size: 0.68rem; letter-spacing: 0.2em;
+      color: #475569; text-transform: uppercase; margin-bottom: 2px;
+    }
+    .fm-stage-val {
+      font-size: 4.2rem; font-weight: 900; line-height: 1;
+      color: #f3f4f6; letter-spacing: 0.04em;
+    }
+    .fm-bet-val {
+      font-size: 6.5rem; font-weight: 900; line-height: 1;
+      color: #fde047; text-shadow: 0 0 60px rgba(253,224,71,0.6);
+      letter-spacing: 0.04em;
+    }
+    .fm-close-btn {
+      position: fixed; top: 18px; right: 18px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.6rem; letter-spacing: 0.1em;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #64748b; padding: 8px 14px; border-radius: 8px;
+      cursor: pointer; transition: color 0.15s, border-color 0.15s;
+    }
+    .fm-close-btn:hover { color: #818cf8; border-color: rgba(129,140,248,0.4); }
+
+    /* BACKTESTER MODAL */
+    #btModal {
+      display:none; position:fixed; inset:0; z-index:300;
+      background:rgba(0,0,0,0.92); backdrop-filter:blur(8px);
+      overflow-y:auto; padding:10px;
+    }
+    #btModal.open { display:block; }
+    .bt-wrap {
+      background:#0a0b14; border:1px solid rgba(99,102,241,0.18);
+      border-radius:16px; max-width:1100px; margin:0 auto;
+      min-height:calc(100vh - 20px); display:flex; flex-direction:column;
+    }
+    .bt-header {
+      display:flex; align-items:center; gap:12px; padding:14px 18px;
+      border-bottom:1px solid rgba(99,102,241,0.18); flex-wrap:wrap;
+      background:rgba(15,17,32,0.95); border-radius:16px 16px 0 0;
+    }
+    .bt-title { font-family:'Courier New',monospace; font-size:1rem; font-weight:800; flex:1; color:#e2e8f0; }
+    .bt-title span { color:#6366f1; }
+    .bt-close {
+      background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.4);
+      color:#ef4444; border-radius:8px; padding:7px 16px; cursor:pointer;
+      font-family:'Courier New',monospace; font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase;
+    }
+    .bt-close:hover { background:rgba(239,68,68,0.28); }
+    .bt-body { padding:18px; flex:1; overflow-y:auto; }
+    .bt-panel {
+      background:#131628; border:1px solid rgba(99,102,241,0.18);
+      border-radius:12px; padding:16px; margin-bottom:14px;
+    }
+    .bt-panel-title {
+      font-family:'Courier New',monospace; font-size:0.52rem;
+      letter-spacing:0.18em; text-transform:uppercase; color:#475569; margin-bottom:10px;
+    }
+    .bt-textarea {
+      width:100%; height:90px; background:rgba(0,0,0,0.4);
+      border:1px solid rgba(99,102,241,0.18); border-radius:8px;
+      padding:8px 10px; color:#e2e8f0; font-family:'Courier New',monospace;
+      font-size:0.68rem; resize:vertical; outline:none;
+    }
+    .bt-textarea:focus { border-color:#6366f1; }
+    .bt-textarea::placeholder { color:#475569; }
+    .bt-hint { font-family:'Courier New',monospace; font-size:0.5rem; color:#475569; margin-top:6px; line-height:1.6; }
+    .bt-hint code { color:#06b6d4; background:rgba(6,182,212,0.08); padding:1px 4px; border-radius:3px; }
+    .bt-btn-row { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+    .bt-btn {
+      font-family:'Courier New',monospace; font-size:0.6rem; letter-spacing:0.06em;
+      text-transform:uppercase; cursor:pointer; border-radius:8px;
+      padding:8px 14px; border:1px solid; transition:all 0.15s;
+    }
+    .bt-btn-primary { background:#6366f1; border-color:#6366f1; color:#fff; font-weight:700; }
+    .bt-btn-primary:hover { opacity:0.85; }
+    .bt-btn-outline { background:transparent; border-color:rgba(99,102,241,0.18); color:#475569; }
+    .bt-btn-outline:hover { color:#e2e8f0; border-color:rgba(99,102,241,0.5); }
+    .bt-btn-green { background:rgba(34,197,94,0.12); border-color:rgba(34,197,94,0.4); color:#22c55e; font-weight:700; }
+    .bt-btn-green:hover { background:rgba(34,197,94,0.22); }
+    .bt-btn-red { background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.35); color:#ef4444; }
+    .bt-btn-red:hover { background:rgba(239,68,68,0.2); }
+    .bt-btn:disabled { opacity:0.35; cursor:not-allowed; }
+    .bt-speed-row { display:flex; align-items:center; gap:12px; margin-top:10px; }
+    .bt-speed-lbl { font-family:'Courier New',monospace; font-size:0.5rem; letter-spacing:0.1em; text-transform:uppercase; color:#475569; white-space:nowrap; }
+    #btSpeedSlider {
+      -webkit-appearance:none; appearance:none; height:3px;
+      background:rgba(99,102,241,0.25); border-radius:2px; outline:none; flex:1; cursor:pointer;
+    }
+    #btSpeedSlider::-webkit-slider-thumb {
+      -webkit-appearance:none; width:14px; height:14px;
+      border-radius:50%; background:#6366f1; cursor:pointer;
+    }
+    .bt-speed-val { font-family:'Courier New',monospace; font-size:0.62rem; color:#6366f1; min-width:45px; text-align:right; }
+    .bt-progress-wrap { margin-bottom:14px; }
+    .bt-progress-info { display:flex; justify-content:space-between; font-family:'Courier New',monospace; font-size:0.5rem; color:#475569; margin-bottom:5px; }
+    .bt-progress-bar { height:3px; background:rgba(99,102,241,0.15); border-radius:2px; overflow:hidden; }
+    .bt-progress-fill { height:100%; background:linear-gradient(90deg,#6366f1,#06b6d4); border-radius:2px; transition:width 0.3s; }
+    .bt-live-card {
+      background:#131628; border:1px solid rgba(99,102,241,0.18);
+      border-radius:12px; padding:18px 14px; margin-bottom:14px;
+      display:grid; grid-template-columns:1fr 1fr 1fr; gap:0;
+    }
+    .bt-live-cell { text-align:center; padding:0 10px; }
+    .bt-live-cell + .bt-live-cell { border-left:1px solid rgba(99,102,241,0.18); }
+    .bt-live-cell-lbl { font-family:'Courier New',monospace; font-size:0.44rem; letter-spacing:0.18em; text-transform:uppercase; color:#475569; margin-bottom:8px; }
+    .bt-live-period { font-family:'Courier New',monospace; font-size:1rem; font-weight:700; color:#06b6d4; }
+    .bt-live-pred { font-size:2rem; font-weight:800; line-height:1; transition:color 0.3s; }
+    .bt-live-pred.big { color:#f472b6; }
+    .bt-live-pred.small { color:#22c55e; }
+    .bt-live-pred.none { color:#475569; }
+    .bt-live-result { font-size:2rem; font-weight:800; line-height:1; }
+    .bt-live-result.big { color:#f472b6; }
+    .bt-live-result.small { color:#22c55e; }
+    .bt-live-result.none { color:#475569; }
+    .bt-live-outcome { font-family:'Courier New',monospace; font-size:0.65rem; font-weight:700; margin-top:5px; height:16px; }
+    .bt-live-outcome.win { color:#22c55e; }
+    .bt-live-outcome.loss { color:#ef4444; }
+    .bt-stats-grid {
+      display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin-bottom:14px;
+    }
+    @media(max-width:700px) { .bt-stats-grid { grid-template-columns:repeat(3,1fr); } }
+    .bt-stat-card {
+      background:#131628; border:1px solid rgba(99,102,241,0.18);
+      border-radius:10px; padding:12px 8px; text-align:center;
+    }
+    .bt-stat-lbl { font-family:'Courier New',monospace; font-size:0.42rem; letter-spacing:0.12em; text-transform:uppercase; color:#475569; margin-bottom:5px; }
+    .bt-stat-val { font-size:1.3rem; font-weight:800; }
+    .bt-dots-panel {
+      background:#131628; border:1px solid rgba(99,102,241,0.18);
+      border-radius:12px; padding:12px 14px; margin-bottom:14px;
+    }
+    .bt-dots-title { font-family:'Courier New',monospace; font-size:0.46rem; letter-spacing:0.15em; text-transform:uppercase; color:#475569; margin-bottom:8px; }
+    .bt-dots-wrap { display:flex; flex-wrap:wrap; gap:2px; }
+    .bt-dot { width:9px; height:9px; border-radius:2px; }
+    .bt-dot.w { background:#22c55e; }
+    .bt-dot.l { background:#ef4444; }
+    .bt-log-panel {
+      background:#131628; border:1px solid rgba(99,102,241,0.18);
+      border-radius:12px; overflow:hidden;
+    }
+    .bt-log-header {
+      padding:10px 14px; font-family:'Courier New',monospace; font-size:0.46rem;
+      letter-spacing:0.15em; text-transform:uppercase; color:#475569;
+      border-bottom:1px solid rgba(99,102,241,0.18);
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .bt-log-scroll { max-height:220px; overflow-y:auto; }
+    .bt-log-scroll::-webkit-scrollbar { width:4px; }
+    .bt-log-scroll::-webkit-scrollbar-thumb { background:rgba(99,102,241,0.3); border-radius:2px; }
+    .bt-log-table { width:100%; border-collapse:collapse; font-family:'Courier New',monospace; font-size:0.58rem; }
+    .bt-log-table th {
+      padding:6px 8px; text-align:left; color:#475569; background:rgba(0,0,0,0.3);
+      font-size:0.42rem; letter-spacing:0.08em; text-transform:uppercase;
+      position:sticky; top:0; z-index:1; border-bottom:1px solid rgba(99,102,241,0.18);
+    }
+    .bt-log-table td { padding:5px 8px; border-bottom:1px solid rgba(255,255,255,0.02); color:#e2e8f0; }
+    .bt-log-table tr:last-child td { border-bottom:none; }
+    .bt-log-table .win-cell { color:#22c55e; font-weight:700; }
+    .bt-log-table .loss-cell { color:#ef4444; font-weight:700; }
+    .bt-log-table .big-cell { color:#f472b6; }
+    .bt-log-table .sm-cell { color:#22c55e; }
+    .bt-log-table .dim-cell { color:#475569; font-size:0.48rem; }
+    .bt-row-max-streak { background:rgba(251,191,36,0.10) !important; outline:1px solid rgba(251,191,36,0.45); }
+    .bt-row-max-streak td { color:#fbbf24 !important; }
+    .bt-empty { text-align:center; padding:24px; font-family:'Courier New',monospace; font-size:0.55rem; color:#475569; }
+    .bt-toast {
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+      background:#131628; border:1px solid rgba(99,102,241,0.18);
+      padding:8px 18px; border-radius:24px; font-family:'Courier New',monospace;
+      font-size:0.6rem; color:#e2e8f0; opacity:0; transition:opacity 0.3s;
+      pointer-events:none; z-index:400; white-space:nowrap;
+    }
+    .bt-toast.show { opacity:1; }
+
+    /* SERVER STATUS BADGE */
+    #serverStatusBadge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.65rem; font-family: 'Courier New', monospace;
+      padding: 3px 10px; border-radius: 20px;
+      border: 1px solid rgba(129,140,248,0.3);
+      background: rgba(15,16,32,0.7);
+      color: #94a3b8; margin-top: 4px;
+    }
+    #serverStatusBadge.connected { border-color: rgba(34,197,94,0.5); color: #22c55e; }
+    #serverStatusBadge.disconnected { border-color: rgba(239,68,68,0.4); color: #f87171; }
+    #serverStatusDot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    /* HISTORY VIEW */
+    .history-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .history-meta-copy {
+      font-family: 'Courier New', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+    .history-fold-btn,
+    .history-page-btn {
+      font-family: 'Courier New', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 8px;
+      border: 1px solid rgba(129,140,248,0.25);
+      background: rgba(15,16,32,0.82);
+      color: #cbd5e1;
+      padding: 7px 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .history-fold-btn:hover,
+    .history-page-btn:hover {
+      color: #818cf8;
+      border-color: rgba(129,140,248,0.55);
+    }
+    .history-page-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .history-older-wrap {
+      display: none;
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(129,140,248,0.18);
+      background: rgba(15,16,32,0.55);
+    }
+    .history-older-wrap.open { display: block; }
+    .history-older-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .history-older-title {
+      font-family: 'Courier New', monospace;
+      font-size: 0.64rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #818cf8;
+    }
+    .history-pager {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .history-page-info {
+      font-family: 'Courier New', monospace;
+      font-size: 0.58rem;
+      color: #94a3b8;
+      min-width: 86px;
+      text-align: center;
+    }
+    .history-empty {
+      text-align: center;
+      padding: 18px 14px;
+      border-radius: 12px;
+      border: 1px dashed rgba(129,140,248,0.14);
+      background: rgba(15,16,32,0.45);
+      font-family: 'Courier New', monospace;
+      font-size: 0.62rem;
+      color: #64748b;
+    }
+
+    /* NTFY SETTINGS */
+    .notify-settings-card {
+      margin-bottom: 14px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(129,140,248,0.18);
+      background: rgba(15,16,32,0.62);
+    }
+    .notify-settings-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .notify-settings-title {
+      font-family: 'Courier New', monospace;
+      font-size: 0.66rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #818cf8;
+    }
+    .notify-settings-status {
+      font-family: 'Courier New', monospace;
+      font-size: 0.56rem;
+      color: #94a3b8;
+    }
+    .notify-settings-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(120px, 0.7fr) auto;
+      gap: 10px;
+      align-items: end;
+    }
+    .notify-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .notify-label {
+      font-family: 'Courier New', monospace;
+      font-size: 0.54rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+    .notify-input {
+      background: rgba(8,9,20,0.9);
+      border: 1px solid rgba(129,140,248,0.22);
+      border-radius: 8px;
+      padding: 9px 10px;
+      color: #f3f4f6;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      outline: none;
+    }
+    .notify-input:focus {
+      border-color: #818cf8;
+    }
+    .notify-save-btn {
+      min-width: 108px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid rgba(34,197,94,0.35);
+      background: rgba(34,197,94,0.14);
+      color: #22c55e;
+      font-family: 'Courier New', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.15s, border-color 0.15s;
+    }
+    .notify-save-btn:hover { opacity: 0.85; }
+    .notify-hint {
+      margin-top: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.52rem;
+      color: #64748b;
+      line-height: 1.6;
+    }
+    @media (max-width: 640px) {
+      .history-meta-row,
+      .history-older-head,
+      .history-pager,
+      .notify-settings-head {
+        align-items: stretch;
+      }
+      .history-fold-btn,
+      .history-page-btn,
+      .history-page-info {
+        width: 100%;
+        text-align: center;
+      }
+      .notify-settings-grid {
+        grid-template-columns: 1fr;
+      }
+      .notify-save-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body class="text-neutral-100">
+  <main class="flex flex-col min-h-screen justify-center items-center px-1 sm:px-2 bg-gradient-to-br from-[#232946] to-[#1e1b4b]">
+    <section class="w-full max-w-2xl glass px-2 sm:px-7 py-3 sm:py-7 mt-3 sm:mt-6 neumorph">
+
+      <!-- Header -->
+      <header class="flex flex-col items-center mb-5 sm:mb-6">
+        <span class="flex items-center text-3xl sm:text-4xl font-extrabold tracking-tight text-indigo-400 drop-shadow-sm">
+          <img src="https://ossimg.92pkrimg.com/92pkr/other/h5setting_20241112091303j53x.png"
+               alt="92pkr Logo"
+                class="h-12 w-auto mr-3 rounded-xl shadow-lg inline-block align-middle">3M WinGO
+          <span class="text-xs ml-2 px-2 py-1 bg-indigo-800/50 rounded-xl font-medium tracking-wide">SERVER</span>
+        </span>
+        <span class="text-xs sm:text-sm text-neutral-300 mt-1">Ali Abbas</span>
+        <div id="serverStatusBadge" class="disconnected">
+          <span id="serverStatusDot"></span>
+          <span id="serverStatusText">Connecting to server...</span>
+        </div>
+      </header>
+
+      <!-- Prediction & Dashboard Area -->
+      <div id="predictionDashboardArea" class="flex flex-col gap-6 mb-8">
+        <!-- Dashboard -->
+        <div id="dashboard" class="flex flex-row items-center justify-between bg-neutral-900/80 glass neumorph rounded-xl p-4 gap-3 text-center">
+          <div>
+            <div class="text-xs text-neutral-400 mb-1">Wins</div>
+            <div id="wins" class="text-3xl font-extrabold text-green-400">0</div>
+          </div>
+          <div>
+            <div class="text-xs text-neutral-400 mb-1">Losses</div>
+            <div id="losses" class="text-3xl font-extrabold text-red-400">0</div>
+          </div>
+          <div>
+            <div class="text-xs text-neutral-400 mb-1">Accuracy</div>
+            <div id="accuracy" class="text-3xl font-extrabold text-blue-300">--</div>
+          </div>
+          <div>
+            <div class="text-xs text-neutral-400 mb-1">Total Games</div>
+            <div id="total" class="text-3xl font-extrabold text-indigo-300">0</div>
+          </div>
+          <div>
+            <div class="text-xs text-neutral-400 mb-1">Current Streak</div>
+            <div class="flex flex-row items-center justify-center gap-2">
+              <div id="currentStreak" class="text-3xl font-extrabold text-yellow-400 transition-all">--</div>
+              <span id="maxLossStreak" class="loss-streak-label">
+                <i class="fa-solid fa-arrow-down text-red-400"></i>
+                <span>Max Loss: <span id="maxLossStreakValue">0</span></span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prediction Card -->
+        <div id="predictionCardGroup" class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-0 prediction-fade show predict-card-small">
+          <div class="flex flex-col justify-center items-center bg-neutral-800/80 neumorph px-2 py-2 sm:px-3 sm:py-3 rounded-xl shadow">
+            <span class="text-xs sm:text-sm text-neutral-400 tracking-wide flex items-center gap-1">
+              <i class="fa-solid fa-calendar text-blue-300"></i>
+              Next Period
+            </span>
+            <span id="nextPeriod" class="text-2xl sm:text-3xl font-mono font-extrabold mt-1 break-all">--</span>
+          </div>
+          <div class="flex flex-col justify-center items-center bg-neutral-800/80 neumorph px-2 py-2 sm:px-3 sm:py-3 rounded-xl shadow">
+            <span class="text-xs sm:text-sm text-neutral-400 tracking-wide flex items-center gap-1">
+              <i class="fa-solid fa-chart-line text-pink-400"></i>
+              Prediction
+            </span>
+            <span id="nextPrediction" class="text-3xl sm:text-4xl font-extrabold mt-1 transition-all">--</span>
+            <span id="confirmedBadge" class="text-xs font-mono font-bold mt-1 px-2 py-0.5 rounded-full hidden"></span>
+          </div>
+          <div class="flex flex-col justify-center items-center bg-neutral-800/80 neumorph px-2 py-2 sm:px-3 sm:py-3 rounded-xl shadow">
+            <span class="text-xs sm:text-sm text-neutral-400 tracking-wide flex items-center gap-1">
+              <i class="fa-solid fa-clock text-yellow-400"></i>
+              Time Left
+            </span>
+            <span id="countdown" class="text-2xl sm:text-3xl font-mono font-bold mt-1">--:--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Panel -->
+      <div id="errorPanel" class="hidden bg-red-900/80 text-red-200 rounded-lg px-4 py-3 mb-4 sm:mb-6 font-mono text-xs"></div>
+
+      <div id="historyOlderWrap" class="history-older-wrap w-full mb-6">
+        <div class="history-older-head">
+          <div id="historyOlderTitle" class="history-older-title">Older history</div>
+          <div class="history-pager">
+            <button id="historyPrevBtn" class="history-page-btn">Previous</button>
+            <div id="historyPageInfo" class="history-page-info">Page 1 / 1</div>
+            <button id="historyNextBtn" class="history-page-btn">Next</button>
+          </div>
+        </div>
+        <div id="historyOlderList" class="flex flex-col"></div>
+      </div>
+
+      <div class="notify-settings-card">
+        <div class="notify-settings-head">
+          <div class="notify-settings-title">Ntfy Alert Settings</div>
+          <div id="notifySettingsStatus" class="notify-settings-status">Loading current config...</div>
+        </div>
+        <div class="notify-settings-grid">
+          <label class="notify-field">
+            <span class="notify-label">Topic Name</span>
+            <input id="notifyTopicInput" class="notify-input" type="text" value="wingo-ali" placeholder="wingo-ali" autocomplete="off">
+          </label>
+          <label class="notify-field">
+            <span class="notify-label">Stage Threshold</span>
+            <input id="notifyThresholdInput" class="notify-input" type="number" min="1" step="1" value="6">
+          </label>
+          <button id="notifySaveBtn" class="notify-save-btn">Save</button>
+        </div>
+        <div class="notify-hint">Notifications will send to <span id="notifyTopicPreview">wingo-ali</span> once the live loss stage reaches the selected threshold, then continue each period until the chain resets to S1.</div>
+      </div>
+
+      <!-- MARTINGALE BET TRACKER -->
+      <div id="mg-panel" class="glass neumorph w-full mb-6" style="border:1.5px solid rgba(129,140,248,0.28);padding:0;overflow:hidden;">
+        <div id="mg-header" onclick="mg_togglePanel()" class="flex items-center justify-between px-4 py-3 cursor-pointer" style="background:rgba(15,16,32,0.85);border-bottom:1px solid rgba(129,140,248,0.15);">
+          <span class="font-semibold text-indigo-300 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-indigo-400"></i>
+            Martingale Bet Tracker
+          </span>
+          <span id="mg-header-right" class="text-xs text-indigo-400">▾ Click to collapse</span>
+        </div>
+        <div id="mg-body" style="padding:16px;">
+          <!-- STATE A: Setup -->
+          <div id="mg-setup">
+            <div class="mg-setup-grid">
+              <div class="mg-field">
+                <label class="mg-lbl">Starting Balance (PKR)</label>
+                <input class="mg-input" type="number" id="mg-startBal" value="25000" min="1">
+              </div>
+              <div class="mg-field">
+                <label class="mg-lbl">Base Bet (PKR)</label>
+                <input class="mg-input" type="number" id="mg-baseBet" value="15" min="1">
+              </div>
+              <div class="mg-field">
+                <label class="mg-lbl">Loss Multiplier ×</label>
+                <input class="mg-input" type="number" id="mg-lossMulti" value="2" min="1.01" step="0.1">
+              </div>
+              <div class="mg-field">
+                <label class="mg-lbl">Win Payout ×</label>
+                <input class="mg-input" type="number" id="mg-payoutMulti" value="1.96" min="1.01" step="0.01">
+              </div>
+            </div>
+            <div class="mg-stages-section">
+              <div class="mg-stages-hdr">
+                <span class="mg-lbl" style="font-size:0.54rem;">⚙ Stage Bet Amounts (PKR)</span>
+                <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">
+                  <button class="mg-sm-btn mg-autofill-btn" id="mg-autoFillBtn">⚡ Auto-Fill</button>
+                  <button class="mg-sm-btn mg-add-stage-btn" id="mg-addStageBtn">＋ Add Stage</button>
+                  <button class="mg-sm-btn mg-reset-btn" id="mg-removeStageBtn">－ Remove Last</button>
+                </div>
+              </div>
+              <div id="mg-stage-inputs" class="mg-stage-inputs-row"></div>
+              <div class="mg-stages-hint">Auto-Fill calculates each stage using Base Bet × Loss Multiplier.</div>
+            </div>
+            <button class="mg-start-btn" id="mg-startBtn">▶ Start Session</button>
+          </div>
+          <!-- STATE B: Active Tracker -->
+          <div id="mg-tracker" style="display:none;">
+            <div class="mg-live-row">
+              <div class="mg-live-card">
+                <div class="mg-live-lbl">Stage</div>
+                <div class="mg-live-val" id="mg-stageDisp" style="color:#818cf8;">S0</div>
+              </div>
+              <div class="mg-live-card mg-bet-card">
+                <div class="mg-live-lbl">Bet This Round</div>
+                <div class="mg-live-val" id="mg-betDisp" style="color:#fde047;">--</div>
+              </div>
+              <div class="mg-live-card">
+                <div class="mg-live-lbl">Balance</div>
+                <div class="mg-live-val" id="mg-balDisp">--</div>
+              </div>
+              <div class="mg-live-card">
+                <div class="mg-live-lbl">Session P/L</div>
+                <div class="mg-live-val" id="mg-plDisp">--</div>
+              </div>
+            </div>
+            <div style="margin-bottom:12px;">
+              <div class="mg-ladder-lbl">Stage Ladder</div>
+              <div class="mg-chips" id="mg-chips"></div>
+            </div>
+            <div id="mg-warn" class="mg-warn" style="display:none;"></div>
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <span class="mg-ladder-lbl">Session Log</span>
+                <div style="display:flex;gap:5px;">
+                  <button class="mg-sm-btn" id="mg-copyBtn">Copy</button>
+                  <button class="mg-sm-btn" id="mg-csvBtn">CSV</button>
+                  <button class="mg-sm-btn mg-end-btn" id="mg-endBtn">End</button>
+                  <button class="mg-sm-btn mg-reset-btn" id="mg-resetBtn">Reset</button>
+                </div>
+              </div>
+              <div class="mg-log-scroll">
+                <table class="mg-table">
+                  <thead>
+                    <tr><th>#</th><th>Period</th><th>Result</th><th>Stage</th><th>Bet</th><th>Balance</th></tr>
+                  </thead>
+                  <tbody id="mg-log-body"></tbody>
+                </table>
+              </div>
+              <div id="mg-empty-log" style="text-align:center;padding:14px;font-family:'Courier New',monospace;font-size:0.6rem;color:#475569;">
+                Waiting for first resolved prediction...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- History Area -->
+      <div id="historyArea" class="w-full mt-3">
+        <div class="flex flex-col mb-2">
+          <span class="text-lg font-bold text-indigo-300 mb-1">History</span>
+        </div>
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0 mt-2">
+          <div class="flex flex-row w-full gap-2">
+            <button id="clearBtn"
+              class="w-1/3 sm:w-auto bg-red-500 hover:bg-red-600 transition px-4 py-2 font-semibold rounded-lg shadow text-white mb-1 sm:mb-0">
+              <i class="fa-solid fa-database mr-2"></i> Clear Server History
+            </button>
+            <button id="shareHistoryBtn"
+              class="w-1/3 sm:w-auto bg-indigo-500 hover:bg-indigo-600 transition px-4 py-2 font-semibold rounded-lg shadow text-white mb-1 sm:mb-0">
+              <i class="fa-solid fa-share-nodes mr-2"></i> Share History
+            </button>
+            <button id="openBacktesterBtn" onclick="bt_openModal()"
+              class="w-1/3 sm:w-auto bg-yellow-600 hover:bg-yellow-700 transition px-4 py-2 font-semibold rounded-lg shadow text-white mb-1 sm:mb-0">
+              <i class="fa-solid fa-flask mr-2"></i> Backtester
+            </button>
+          </div>
+          <div class="flex flex-row w-full gap-2 mt-2 flex-wrap">
+            <button id="exportAllBtn"
+              class="w-auto bg-cyan-600 hover:bg-cyan-700 transition px-4 py-2 font-semibold rounded-lg shadow text-white mb-1 sm:mb-0">
+              <i class="fa-solid fa-file-export mr-2"></i> Export All History
+            </button>
+            <button id="exportBacktestBtn"
+              class="w-auto bg-emerald-600 hover:bg-emerald-700 transition px-4 py-2 font-semibold rounded-lg shadow text-white mb-1 sm:mb-0">
+              <i class="fa-solid fa-flask-vial mr-2"></i> Export for Backtester
+            </button>
+            <a href="/backtest.html" target="_blank"
+              class="w-auto bg-violet-600 hover:bg-violet-700 transition px-4 py-2 font-semibold rounded-lg shadow text-white mb-1 sm:mb-0 inline-flex items-center no-underline">
+              <i class="fa-solid fa-chart-bar mr-2"></i> Backtest Dashboard
+            </a>
+            <a href="/generate.html" target="_blank"
+              class="w-auto bg-amber-600 hover:bg-amber-700 transition px-4 py-2 font-semibold rounded-lg shadow text-white mb-1 sm:mb-0 inline-flex items-center no-underline">
+              <i class="fa-solid fa-dice mr-2"></i> Dataset Generator
+            </a>
+            <button id="resetGlobalBtn"
+              class="w-auto bg-rose-700 hover:bg-rose-800 transition px-4 py-2 font-semibold rounded-lg shadow text-white">
+              <i class="fa-solid fa-power-off mr-2"></i> Reset Global
+            </button>
+          </div>
+        </div>
+        <br>
+        <div class="history-meta-row">
+          <div id="historyMetaText" class="history-meta-copy">Showing latest 0 records</div>
+          <button id="historyFoldBtn" class="history-fold-btn" style="display:none;">View Older History</button>
+        </div>
+        <div id="historyList" class="flex flex-col"></div>
+
+        <!-- Credit Card -->
+        <div class="flex justify-center mt-8">
+          <div class="flex flex-col items-center bg-neutral-900/90 border border-neutral-700 rounded-xl shadow-md px-10 py-5 w-full max-w-2xl">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="fa-solid fa-user-astronaut text-indigo-400 h-7 w-7 text-2xl"></i>
+              <span class="text-lg font-semibold text-indigo-200">Made by Ali Abbas</span>
+            </div>
+            <span class="text-xs text-neutral-400 mb-1">WhatsApp</span>
+            <a href="https://wa.me/923483469617" target="_blank" class="text-sm font-mono text-green-400 hover:underline hover:text-green-300 transition">
+              +92 348 3469617
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Win Modal -->
+    <div id="winModal" class="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm transition-all opacity-0 pointer-events-none">
+      <div class="flex flex-col items-center justify-center">
+        <i class="fa-solid fa-trophy trophy-glow"></i>
+        <span class="modal-celebrate-text">Congratulations<br>You Won!</span>
+      </div>
+    </div>
+
+    <!-- Welcome Modal -->
+    <div id="welcomeModal" class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none">
+      <div class="modal-box flex flex-col items-center justify-center">
+        <span class="modal-title"><i class="fa-solid fa-crown text-yellow-400 mr-2"></i>92pkr Hack</span>
+        <div class="modal-sub">Developed by <span style="color:#4fd1c5">Ali Abbas</span></div>
+        <div class="modal-body">
+          <p>This hack is provided free for the benefit of users.<br>
+          For support, tips, or custom developments, contact me on WhatsApp below.</p>
+        </div>
+        <a href="https://wa.me/923483469617" target="_blank" class="whatsapp flex items-center gap-2"><i class="fab fa-whatsapp"></i>+92 348 3469617</a>
+        <button class="close-btn mt-4" id="closeWelcomeBtn"><i class="fa-solid fa-check mr-2"></i>Continue</button>
+      </div>
+    </div>
+
+    <!-- Risk warning toast -->
+    <div id="riskToast" class="fixed top-5 right-5 bg-yellow-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 z-50 opacity-0 pointer-events-none transition">
+      <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+      <span id="riskToastMsg"></span>
+    </div>
+
+    <!-- BACKTESTER MODAL -->
+    <div id="btModal" onclick="if(event.target===this)bt_closeModal()">
+      <div class="bt-wrap">
+        <div class="bt-header">
+          <div class="bt-title">WinGO <span>Backtester</span></div>
+          <button class="bt-close" onclick="bt_closeModal()">&#x2715; Close</button>
+        </div>
+        <div class="bt-body">
+          <div class="bt-panel">
+            <div class="bt-panel-title">📂 Data Import</div>
+            <textarea id="btDataInput" class="bt-textarea" placeholder="Paste data or upload JSON file...
+
+Format 1 — CSV: period,number
+Format 2 — Predictor Export
+Format 3 — JSON array [{period, num}]"></textarea>
+            <div class="bt-hint">
+              <b>Supported:</b> <code>period,num</code> CSV · Predictor export · JSON array of <code>{period, num}</code>
+            </div>
+            <input type="file" id="btJsonFile" accept=".json" style="display:none" onchange="bt_loadJSON(this)"/>
+            <div class="bt-btn-row">
+              <button class="bt-btn bt-btn-primary" onclick="bt_parseAndLoad()">⚡ Load Data</button>
+              <button class="bt-btn bt-btn-outline" onclick="document.getElementById('btJsonFile').click()">📁 Upload JSON</button>
+              <button class="bt-btn bt-btn-green" onclick="bt_importFromAPI()" id="btApiImportBtn">🌐 Import from API</button>
+              <button class="bt-btn bt-btn-outline" onclick="bt_loadSample()">Load Sample</button>
+              <button class="bt-btn bt-btn-outline" onclick="bt_clearAll()">Clear</button>
+            </div>
+            <div class="bt-speed-row">
+              <span class="bt-speed-lbl">⏱ Speed</span>
+              <input type="range" id="btSpeedSlider" min="10" max="4000" value="600" step="10" oninput="bt_updateSpeed()"/>
+              <span class="bt-speed-val" id="btSpeedLabel">600ms</span>
+            </div>
+          </div>
+          <div class="bt-panel" style="padding:12px 16px;">
+            <div class="bt-btn-row" style="margin-top:0;">
+              <button class="bt-btn bt-btn-green" id="btPlayBtn" onclick="bt_togglePlay()" disabled>▶ Play</button>
+              <button class="bt-btn bt-btn-red" id="btResetBtn" onclick="bt_resetSim()" disabled>↺ Reset</button>
+              <button class="bt-btn bt-btn-outline" id="btStepBtn" onclick="bt_stepOnce()" disabled>→ Step</button>
+              <button class="bt-btn bt-btn-outline" id="btRunAllBtn" onclick="bt_runAllInstant()" disabled>⚡ Run All</button>
+              <span style="font-family:'Courier New',monospace;font-size:0.52rem;color:#475569;margin-left:auto;align-self:center;" id="btStatusMsg">Load data to start</span>
+            </div>
+          </div>
+          <div class="bt-progress-wrap">
+            <div class="bt-progress-info">
+              <span id="btProgressText">0 / 0 rounds</span>
+              <span id="btProgressPct">0%</span>
+            </div>
+            <div class="bt-progress-bar"><div class="bt-progress-fill" id="btProgressFill" style="width:0%"></div></div>
+          </div>
+          <div class="bt-live-card">
+            <div class="bt-live-cell">
+              <div class="bt-live-cell-lbl">Period</div>
+              <div class="bt-live-period" id="btLivePeriod">——</div>
+            </div>
+            <div class="bt-live-cell">
+              <div class="bt-live-cell-lbl">Prediction</div>
+              <div class="bt-live-pred none" id="btLivePred">—</div>
+              <div class="bt-live-outcome" id="btLiveOutcome"></div>
+            </div>
+            <div class="bt-live-cell">
+              <div class="bt-live-cell-lbl">Actual Result</div>
+              <div class="bt-live-result none" id="btLiveResult">—</div>
+            </div>
+          </div>
+          <div class="bt-stats-grid">
+            <div class="bt-stat-card"><div class="bt-stat-lbl">Wins</div><div class="bt-stat-val" id="btSWins" style="color:#22c55e;">0</div></div>
+            <div class="bt-stat-card"><div class="bt-stat-lbl">Losses</div><div class="bt-stat-val" id="btSLosses" style="color:#ef4444;">0</div></div>
+            <div class="bt-stat-card"><div class="bt-stat-lbl">Accuracy</div><div class="bt-stat-val" id="btSAcc" style="color:#06b6d4;">—</div></div>
+            <div class="bt-stat-card"><div class="bt-stat-lbl">Max Loss Streak</div><div class="bt-stat-val" id="btSMaxStreak" style="color:#fbbf24;">0</div></div>
+            <div class="bt-stat-card"><div class="bt-stat-lbl">Cur. Loss Streak</div><div class="bt-stat-val" id="btSCurStreak" style="color:#ef4444;">0</div></div>
+            <div class="bt-stat-card"><div class="bt-stat-lbl">Total Rounds</div><div class="bt-stat-val" id="btSTotal" style="color:#e2e8f0;">0</div></div>
+          </div>
+          <div class="bt-dots-panel">
+            <div class="bt-dots-title">🟩 Round-by-round result (last 200)</div>
+            <div class="bt-dots-wrap" id="btDots"></div>
+            <div class="bt-empty" id="btDotsEmpty">Load data and run simulation...</div>
+          </div>
+          <div class="bt-log-panel">
+            <div class="bt-log-header">
+              <span>📋 History Log <small style="color:#475569;font-size:0.42rem;">(last 500)</small></span>
+              <span id="btLogCount" style="color:#6366f1;">0 entries</span>
+            </div>
+            <div class="bt-log-scroll">
+              <table class="bt-log-table" id="btHistTable">
+                <thead>
+                  <tr><th>#</th><th>Period</th><th>Pred</th><th>Actual</th><th>Result</th><th>Loss Streak</th><th>Logic</th></tr>
+                </thead>
+                <tbody id="btHistBody"></tbody>
+              </table>
+              <div class="bt-empty" id="btHistEmpty">Load data and run simulation...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="btToast" class="bt-toast"></div>
+
+    <!-- Focus Mode -->
+    <button id="focusModeBtn" onclick="toggleFocusMode()" title="Focus Mode">
+      <i class="fa fa-expand" id="focusModeIcon"></i>
+    </button>
+    <div id="focusOverlay">
+      <div class="fm-inner">
+        <div class="fm-period" id="fm-period">--</div>
+        <div class="fm-pred-lbl">PREDICTION</div>
+        <div class="fm-pred none" id="fm-pred">--</div>
+        <div class="fm-divider"></div>
+        <div class="fm-cd-lbl">TIME LEFT</div>
+        <div class="fm-countdown" id="fm-countdown">--:--</div>
+        <div id="fm-bet-row" class="fm-bet-row" style="display:none;">
+          <div class="fm-divider"></div>
+          <div class="fm-bet-lbl">STAGE</div>
+          <div class="fm-stage-val" id="fm-stage">S1</div>
+          <div class="fm-bet-lbl" style="margin-top:14px;">BET THIS ROUND</div>
+          <div class="fm-bet-val" id="fm-bet">--</div>
+        </div>
+      </div>
+      <button class="fm-close-btn" onclick="toggleFocusMode()">
+        <i class="fa fa-compress"></i> Exit Focus
+      </button>
+    </div>
+  </main>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  GLOBAL STATE — populated from WebSocket server
+// ══════════════════════════════════════════════════════════
+let history = [];
+let fullHistory = [];
+let lastPrediction = null;
+let lastPeriod = null;
+let _prevWsPeriod = null;
+let historyOlderExpanded = false;
+let historyOlderPage = 1;
+let historyFetchSeq = 0;
+const HISTORY_VISIBLE_LIMIT = 50;
+const HISTORY_PAGE_SIZE = 25;
+let notifyConfig = { topic: 'wingo-ali', threshold: 6 };
+
+// ══════════════════════════════════════════════════════════
+//  HELPER / UI UTILITIES (same as original)
+// ══════════════════════════════════════════════════════════
+const pad = n => n < 10 ? '0' + n : n;
+
+function label(num) {
+  if (num === null || num === undefined) return '--';
+  if (num <= 4) return 'Small';
+  return 'Big';
+}
+
+function colorClass(lab) {
+  if (lab === 'Big') return 'text-pink-400';
+  if (lab === 'Small') return 'text-green-400';
+  return 'text-neutral-300';
+}
+
+function resultIcon(correct) {
+  return correct
+    ? '<i class="fa-solid fa-trophy glow-trophy text-400" style="color:#00FF00; top: 40px;" title="Win"></i>'
+    : '<i class="fa-solid fa-xmark glow-x text-red-400" style="color:#f87171; top: 40px !important; font-size:2rem;" title="Loss"></i>';
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorPanel');
+  if (el) { el.textContent = msg; el.classList.remove('hidden'); }
+}
+
+function hideError() {
+  const el = document.getElementById('errorPanel');
+  if (el) el.classList.add('hidden');
+}
+
+function showRiskToast(msg) {
+  const toast = document.getElementById('riskToast');
+  document.getElementById('riskToastMsg').textContent = msg;
+  toast.classList.remove('opacity-0', 'pointer-events-none');
+  toast.style.transform = "translateY(0)";
+  setTimeout(() => {
+    toast.classList.add('opacity-0', 'pointer-events-none');
+  }, 3500);
+}
+
+function setNotifyStatus(msg, isError) {
+  const statusEl = document.getElementById('notifySettingsStatus');
+  if (!statusEl) return;
+  statusEl.textContent = msg;
+  statusEl.style.color = isError ? '#f87171' : '#94a3b8';
+}
+
+function applyNotifyConfig(config) {
+  if (!config) return;
+  notifyConfig = {
+    topic: String(config.topic || 'wingo-ali'),
+    threshold: Math.max(1, parseInt(config.threshold, 10) || 6)
+  };
+  const topicInput = document.getElementById('notifyTopicInput');
+  const thresholdInput = document.getElementById('notifyThresholdInput');
+  const topicPreview = document.getElementById('notifyTopicPreview');
+  if (topicInput) topicInput.value = notifyConfig.topic;
+  if (thresholdInput) thresholdInput.value = String(notifyConfig.threshold);
+  if (topicPreview) topicPreview.textContent = notifyConfig.topic;
+}
+
+async function readJsonResponse(res, missingRouteMessage) {
+  const contentType = res.headers.get('content-type') || '';
+  const rawText = await res.text();
+  if (!contentType.includes('application/json')) {
+    const looksLikeHtml = /^\s*</.test(rawText);
+    throw new Error(looksLikeHtml ? missingRouteMessage : `Unexpected response (${res.status})`);
+  }
+  try {
+    return JSON.parse(rawText);
+  } catch {
+    throw new Error(`Invalid JSON response (${res.status})`);
+  }
+}
+
+async function loadNotifyConfig() {
+  try {
+    const res = await fetch('/api/notify-config');
+    const data = await readJsonResponse(res, 'Restart server to enable notify settings');
+    if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    applyNotifyConfig(data.notifyConfig);
+    setNotifyStatus('Loaded from server', false);
+  } catch (err) {
+    setNotifyStatus(err.message || 'Using local defaults', true);
+  }
+}
+
+async function saveNotifyConfig() {
+  const saveBtn = document.getElementById('notifySaveBtn');
+  const topicInput = document.getElementById('notifyTopicInput');
+  const thresholdInput = document.getElementById('notifyThresholdInput');
+  const topic = String(topicInput?.value || '').trim();
+  const threshold = parseInt(thresholdInput?.value || '', 10);
+  if (!topic) {
+    setNotifyStatus('Topic is required', true);
+    return;
+  }
+  if (!Number.isFinite(threshold) || threshold < 1) {
+    setNotifyStatus('Threshold must be 1 or higher', true);
+    return;
+  }
+  if (saveBtn) saveBtn.disabled = true;
+  setNotifyStatus('Saving...', false);
+  try {
+    const res = await fetch('/api/notify-config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, threshold })
+    });
+    const data = await readJsonResponse(res, 'Restart server to enable notify settings');
+    if (!res.ok || !data.ok) throw new Error(data.error || ('HTTP ' + res.status));
+    applyNotifyConfig(data.notifyConfig);
+    setNotifyStatus('Saved to server', false);
+    showRiskToast('Notification settings updated.');
+  } catch (err) {
+    setNotifyStatus('Save failed: ' + err.message, true);
+  } finally {
+    if (saveBtn) saveBtn.disabled = false;
+  }
+}
+
+function showWinModal() {
+  const modal = document.getElementById('winModal');
+  modal.classList.add('show');
+  setTimeout(() => {
+    confetti({ particleCount: 80, spread: 90, origin: { y: 0.6, x: 0.5 } });
+    confetti({ particleCount: 65, angle: 60, spread: 60, origin: { x: 0.2, y: 0.45 } });
+    confetti({ particleCount: 65, angle: 120, spread: 60, origin: { x: 0.8, y: 0.45 } });
+  }, 100);
+  setTimeout(() => { modal.classList.remove('show'); }, 3000);
+}
+
+function animatePredictionCard() {
+  const card = document.getElementById('predictionCardGroup');
+  if (!card) return;
+  card.classList.remove('show');
+  void card.offsetWidth;
+  setTimeout(() => card.classList.add('show'), 20);
+}
+
+// ── Streak + stages computed server-side ──
+
+// ══════════════════════════════════════════════════════════
+//  COUNTDOWN TIMER
+// ══════════════════════════════════════════════════════════
+let countdownIv = null;
+
+function startCountdown(seconds) {
+  if (countdownIv) clearInterval(countdownIv);
+  let cnt = Math.max(0, Math.floor(seconds));
+  const el = document.getElementById('countdown');
+  function update() {
+    if (!el) return;
+    let min = Math.floor(cnt / 60);
+    let sec = cnt % 60;
+    el.textContent = `${pad(min)}:${pad(sec)}`;
+    if (cnt <= 5) el.classList.add('timer-red');
+    else el.classList.remove('timer-red');
+    if (cnt <= 0) { clearInterval(countdownIv); el.textContent = '00:00'; el.classList.remove('timer-red'); }
+    cnt--;
+  }
+  update();
+  countdownIv = setInterval(update, 1000);
+}
+
+// ══════════════════════════════════════════════════════════
+//  RENDER DASHBOARD & HISTORY
+// ══════════════════════════════════════════════════════════
+function renderDashboard(stats) {
+  if (stats) {
+    const winsEl = document.getElementById('wins');
+    const lossesEl = document.getElementById('losses');
+    const totalEl = document.getElementById('total');
+    const accuracyEl = document.getElementById('accuracy');
+    const maxLossStreakEl = document.getElementById('maxLossStreakValue');
+    if (winsEl) winsEl.textContent = stats.wins;
+    if (lossesEl) lossesEl.textContent = stats.losses;
+    if (totalEl) totalEl.textContent = stats.total;
+    if (accuracyEl) accuracyEl.textContent = stats.accuracy !== null ? stats.accuracy + '%' : '--';
+    if (maxLossStreakEl) maxLossStreakEl.textContent = stats.maxLossStreak;
+  }
+}
+
+function buildHistoryCard(e, idx) {
+  const div = document.createElement('div');
+  div.className = 'glow-container';
+  let stageInfo = '';
+  if (typeof e.correct === 'boolean' && e.stage !== undefined) {
+    if (e.correct && e.stage > 1) {
+      let suffix = 'th';
+      if (e.stage === 1) suffix = 'st';
+      else if (e.stage === 2) suffix = 'nd';
+      else if (e.stage === 3) suffix = 'rd';
+      stageInfo = `<span class="stage-label">WON at ${e.stage}${suffix} stage</span>`;
+    } else if (!e.correct) {
+      stageInfo = `<span class="stage-label">at stage ${e.stage}</span>`;
+    }
+  }
+  let confirmTag = '';
+  if (e.confirmed === 'CONFIRMED') {
+    confirmTag = `<span style="font-size:0.6rem;font-weight:700;color:#22c55e;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.35);padding:1px 6px;border-radius:10px;margin-left:6px;">✓ CONFIRMED</span>`;
+  } else if (e.confirmed === 'LIKELY') {
+    confirmTag = `<span style="font-size:0.6rem;font-weight:700;color:#fbbf24;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.35);padding:1px 6px;border-radius:10px;margin-left:6px;">~ LIKELY</span>`;
+  }
+  div.innerHTML = `
+    <div class="glow-row">
+      <i class="fa-solid fa-calendar glow-icon text-blue-300"></i>
+      <span class="glow-info">Period: <span class="glow-label">${e.period}</span></span>
+    </div>
+    <div class="glow-row">
+      <i class="fa-solid fa-chart-line glow-icon text-pink-400"></i>
+      <span class="glow-info">Prediction: <span class="glow-label ${colorClass(e.guess)}">${e.guess}</span>${confirmTag}</span>
+    </div>
+    <div class="glow-row">
+      <i class="fa-solid fa-check-circle glow-icon" style="color:#38bdf8"></i>
+      <span class="glow-info">Result: <span class="glow-label ${colorClass(e.actual)}">${e.actual} <span style="font-weight:400;">${e.num !== null ? `(${e.num})` : ''}</span></span></span>
+      ${stageInfo}
+    </div>
+    <div class="glow-right">
+      ${typeof e.correct === 'boolean' ? resultIcon(e.correct) : ''}
+    </div>
+  `;
+  setTimeout(() => div.classList.add('show'), 20 * Math.min(idx, 10));
+  return div;
+}
+
+function renderHistoryCards(listEl, entries, emptyText, startIndex) {
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  if (!entries.length) {
+    listEl.innerHTML = `<div class="history-empty">${emptyText}</div>`;
+    return;
+  }
+  entries.forEach((entry, idx) => {
+    listEl.appendChild(buildHistoryCard(entry, startIndex + idx));
+  });
+}
+
+function syncRecentHistoryIntoFullHistory() {
+  const merged = [];
+  const seen = new Set();
+  history.forEach(entry => {
+    const key = `${entry.period}|${entry.actual}|${entry.timestamp}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    merged.push(entry);
+  });
+  fullHistory.forEach(entry => {
+    const key = `${entry.period}|${entry.actual}|${entry.timestamp}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    merged.push(entry);
+  });
+  fullHistory = merged;
+}
+
+async function refreshFullHistory() {
+  const seq = ++historyFetchSeq;
+  try {
+    const res = await fetch('/api/history');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (seq !== historyFetchSeq) return;
+    fullHistory = Array.isArray(data.history) ? data.history : [];
+    renderHistory();
+  } catch (err) {
+    if (!fullHistory.length) {
+      fullHistory = history.slice();
+      renderHistory();
+    }
+  }
+}
+
+function toggleHistoryFold() {
+  historyOlderExpanded = !historyOlderExpanded;
+  renderHistory();
+}
+
+function goToHistoryPage(nextPage) {
+  const filtered = fullHistory.filter(e => e.actual !== 'loading...' && e.num !== null);
+  const olderCount = Math.max(0, filtered.length - HISTORY_VISIBLE_LIMIT);
+  const totalPages = Math.max(1, Math.ceil(olderCount / HISTORY_PAGE_SIZE));
+  historyOlderPage = Math.max(1, Math.min(nextPage, totalPages));
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  const metaText = document.getElementById('historyMetaText');
+  const foldBtn = document.getElementById('historyFoldBtn');
+  const olderWrap = document.getElementById('historyOlderWrap');
+  const olderList = document.getElementById('historyOlderList');
+  const olderTitle = document.getElementById('historyOlderTitle');
+  const prevBtn = document.getElementById('historyPrevBtn');
+  const nextBtn = document.getElementById('historyNextBtn');
+  const pageInfo = document.getElementById('historyPageInfo');
+  if (!list || !metaText || !foldBtn || !olderWrap || !olderList || !olderTitle || !prevBtn || !nextBtn || !pageInfo) return;
+
+  // Stages are computed server-side and included in history entries
+  const filtered = fullHistory.filter(e => e.actual !== 'loading...' && e.num !== null);
+  const recentEntries = filtered.slice(0, HISTORY_VISIBLE_LIMIT);
+  const olderEntries = filtered.slice(HISTORY_VISIBLE_LIMIT);
+  const olderPages = Math.max(1, Math.ceil(olderEntries.length / HISTORY_PAGE_SIZE));
+  historyOlderPage = Math.max(1, Math.min(historyOlderPage, olderPages));
+  const olderStart = (historyOlderPage - 1) * HISTORY_PAGE_SIZE;
+  const olderPageEntries = olderEntries.slice(olderStart, olderStart + HISTORY_PAGE_SIZE);
+
+  metaText.textContent = filtered.length > HISTORY_VISIBLE_LIMIT
+    ? `Showing latest ${recentEntries.length} of ${filtered.length} records. Older entries are folded below.`
+    : `Showing ${filtered.length} records from the last 48 hours.`;
+
+  renderHistoryCards(list, recentEntries, 'No resolved history yet.', 0);
+
+  if (!olderEntries.length) {
+    foldBtn.style.display = 'none';
+    olderWrap.classList.remove('open');
+    olderList.innerHTML = '';
+    return;
+  }
+
+  foldBtn.style.display = 'inline-flex';
+  foldBtn.textContent = historyOlderExpanded
+    ? `Hide Older History (${olderEntries.length})`
+    : `View Older History (${olderEntries.length})`;
+
+  olderWrap.classList.toggle('open', historyOlderExpanded);
+  olderTitle.textContent = `Older history ${olderStart + 1}-${Math.min(olderStart + olderPageEntries.length, olderEntries.length)} of ${olderEntries.length}`;
+  pageInfo.textContent = `Page ${historyOlderPage} / ${olderPages}`;
+  prevBtn.disabled = historyOlderPage <= 1;
+  nextBtn.disabled = historyOlderPage >= olderPages;
+
+  if (historyOlderExpanded) {
+    renderHistoryCards(olderList, olderPageEntries, 'No older history on this page.', HISTORY_VISIBLE_LIMIT + olderStart);
+  } else {
+    olderList.innerHTML = '';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  WEBSOCKET — SERVER CONNECTION
+// ══════════════════════════════════════════════════════════
+let ws = null;
+let wsReconnectTimer = null;
+
+function setStatus(connected, text) {
+  const badge = document.getElementById('serverStatusBadge');
+  const textEl = document.getElementById('serverStatusText');
+  badge.className = 'disconnected';
+  badge.classList.add(connected ? 'connected' : 'disconnected');
+  textEl.textContent = text;
+}
+
+function connectWebSocket() {
+  const wsUrl = `ws://${location.host}`;
+  setStatus(false, 'Connecting...');
+  ws = new WebSocket(wsUrl);
+
+  ws.onopen = () => {
+    setStatus(true, '🟢 Live — Server Connected');
+    hideError();
+    if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
+  };
+
+  ws.onmessage = (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+
+      // ── Full state update ──
+      if (msg.type === 'state') {
+        const data = msg.data;
+        history = data.history || [];
+        lastPrediction = data.lastPrediction || null;
+        lastPeriod = data.lastPeriod || null;
+        if (data.notifyConfig) applyNotifyConfig(data.notifyConfig);
+
+        // Update prediction card
+        if (lastPrediction) {
+          const nextPeriodEl = document.getElementById('nextPeriod');
+          if (nextPeriodEl) nextPeriodEl.textContent = lastPrediction.period;
+
+          const np = document.getElementById('nextPrediction');
+          if (np) {
+            np.textContent = lastPrediction.guess;
+            np.className = colorClass(lastPrediction.guess) + ' text-3xl sm:text-4xl font-extrabold mt-1 transition-all';
+          }
+
+          // Update confirmed badge
+          const badge = document.getElementById('confirmedBadge');
+          if (badge) {
+            if (lastPrediction.confirmed === 'CONFIRMED') {
+              badge.textContent = '✓ CONFIRMED (' + (lastPrediction.confirmSignals || '') + ')';
+              badge.className = 'text-xs font-mono font-bold mt-1 px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 border border-green-500/40';
+            } else if (lastPrediction.confirmed === 'LIKELY') {
+              badge.textContent = '~ LIKELY (' + (lastPrediction.confirmSignals || '') + ')';
+              badge.className = 'text-xs font-mono font-bold mt-1 px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/40';
+            } else {
+              badge.textContent = '';
+              badge.className = 'text-xs font-mono font-bold mt-1 px-2 py-0.5 rounded-full hidden';
+            }
+          }
+
+          // Animate card if period changed
+          if (_prevWsPeriod !== lastPrediction.period) {
+            animatePredictionCard();
+            _prevWsPeriod = lastPrediction.period;
+          }
+        }
+
+        // Update current streak from server-computed state
+        const streak = data.currentStreak || {};
+        const streakEl = document.getElementById('currentStreak');
+        if (streakEl) {
+          if (streak.type && streak.count > 0) {
+            streakEl.textContent = `${streak.type} x${streak.count}`;
+            if (streak.count >= 4) {
+              streakEl.classList.add('text-red-400');
+              showRiskToast('Warning: High streak! Risk of loss is increased.');
+            } else {
+              streakEl.classList.remove('text-red-400');
+            }
+          } else {
+            streakEl.textContent = '--';
+            streakEl.classList.remove('text-red-400');
+          }
+        }
+
+        syncRecentHistoryIntoFullHistory();
+        renderDashboard(data.stats);
+        renderHistory();
+        refreshFullHistory();
+
+        // Sync martingale from server
+        if (data.mgState) mg_syncFromSnapshot(data.mgState);
+      }
+
+      else if (msg.type === 'notify_config') {
+        applyNotifyConfig(msg.notifyConfig);
+        setNotifyStatus('Synced from server', false);
+      }
+
+      // ── Countdown reset (new period detected) ──
+      else if (msg.type === 'countdown_reset') {
+        startCountdown(180);
+      }
+
+      // ── Win event ──
+      else if (msg.type === 'win') {
+        showWinModal();
+      }
+
+      // ── Same period tick — update streak/stats ──
+      else if (msg.type === 'tick_same') {
+        if (msg.streak) {
+          const streakEl = document.getElementById('currentStreak');
+          if (streakEl && msg.streak.type) {
+            streakEl.textContent = `${msg.streak.type} x${msg.streak.count}`;
+            if (msg.streak.count >= 4) streakEl.classList.add('text-red-400');
+            else streakEl.classList.remove('text-red-400');
+          }
+        }
+        if (msg.stats) renderDashboard(msg.stats);
+      }
+
+      // ── Server reset ──
+      else if (msg.type === 'reset') {
+        history = [];
+        fullHistory = [];
+        lastPrediction = null;
+        lastPeriod = null;
+        _prevWsPeriod = null;
+        historyOlderExpanded = false;
+        historyOlderPage = 1;
+        renderHistory();
+        renderDashboard({ wins: 0, losses: 0, total: 0, accuracy: null, maxLossStreak: 0 });
+        const np = document.getElementById('nextPeriod');
+        if (np) np.textContent = '--';
+        const npr = document.getElementById('nextPrediction');
+        if (npr) npr.textContent = '--';
+        const cd = document.getElementById('countdown');
+        if (cd) { cd.textContent = '--:--'; cd.classList.remove('timer-red'); }
+        showRiskToast('Server reset. All history cleared.');
+      }
+
+    } catch (e) {
+      console.error('[WS] Message parse error:', e);
+    }
+  };
+
+  ws.onclose = () => {
+    setStatus(false, '🔴 Disconnected — Reconnecting...');
+    showError('Server disconnected. Retrying in 3 seconds...');
+    wsReconnectTimer = setTimeout(connectWebSocket, 3000);
+  };
+
+  ws.onerror = (err) => {
+    console.error('[WS] Error:', err);
+    ws.close();
+  };
+}
+
+// ══════════════════════════════════════════════════════════
+//  BUTTONS — Clear Server History / Share / Reset Global
+// ══════════════════════════════════════════════════════════
+document.getElementById('clearBtn').addEventListener('click', () => {
+  if (window.confirm('Delete all server history from data/history.json and clear live prediction history? This cannot be undone.')) {
+    fetch('/api/reset', { method: 'POST' })
+      .then(() => showRiskToast('Server history JSON deleted and live history cleared.'))
+      .catch(() => showRiskToast('Server history delete failed — check server.'));
+  }
+});
+
+document.getElementById('shareHistoryBtn').addEventListener('click', () => {
+  const exportHistory = fullHistory
+    .filter(e => e.actual !== 'loading...' && e.num !== null)
+    .map(e => ({
+      period: e.period, guess: e.guess, actual: e.actual,
+      correct: e.correct, num: e.num, confidence: e.confidence,
+      reasoning: e.reasoning, timestamp: e.timestamp,
+    }));
+  const exportText = JSON.stringify(exportHistory, null, 2);
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(exportText)
+      .then(() => showRiskToast('History copied! Paste & share it for analysis.'))
+      .catch(() => prompt('Copy the history below:', exportText));
+  } else {
+    prompt('Copy the history below:', exportText);
+  }
+});
+
+// ── Export All History (full predicted history with predictions, results, reasoning) ──
+document.getElementById('exportAllBtn').addEventListener('click', () => {
+  const exportData = fullHistory
+    .filter(e => e.actual !== 'loading...' && e.num !== null)
+    .map(e => ({
+      period: e.period, guess: e.guess, actual: e.actual,
+      correct: e.correct, num: e.num, confidence: e.confidence,
+      reasoning: e.reasoning, logic: e.logic || 'base',
+      stage: e.stage || 0, timestamp: e.timestamp,
+    }));
+  if (exportData.length === 0) { showRiskToast('No history to export.'); return; }
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `wingo-full-history-${Date.now()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showRiskToast(`Exported ${exportData.length} records (full history).`);
+});
+
+// ── Export for Backtester (draw-API compatible format) ──
+document.getElementById('exportBacktestBtn').addEventListener('click', () => {
+  function numToColor(n) {
+    if (n === 0) return 'red,violet';
+    if (n === 5) return 'green,violet';
+    if (n % 2 === 0) return 'red';
+    return 'green';
+  }
+  const exportData = fullHistory
+    .filter(e => e.actual !== 'loading...' && e.num !== null && e.num !== undefined)
+    .map(e => {
+      const n = parseInt(e.num);
+      return {
+        period: String(e.period),
+        num: n,
+        color: numToColor(n),
+        premium: n,
+        timestamp: e.timestamp ? new Date(e.timestamp).toISOString() : new Date().toISOString(),
+        bigSmall: n > 4 ? 'Big' : 'Small'
+      };
+    })
+    .filter(e => e.period && !isNaN(e.num) && e.num >= 0 && e.num <= 9);
+  // Deduplicate by period
+  const seen = new Set();
+  const deduped = [];
+  for (const entry of exportData) {
+    if (!seen.has(entry.period)) { seen.add(entry.period); deduped.push(entry); }
+  }
+  // Sort oldest first (ascending)
+  deduped.sort((a, b) => a.period.localeCompare(b.period));
+  if (deduped.length === 0) { showRiskToast('No history to export.'); return; }
+  const blob = new Blob([JSON.stringify(deduped, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `wingo-backtester-${Date.now()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showRiskToast(`Exported ${deduped.length} records for backtester.`);
+});
+
+document.getElementById('resetGlobalBtn').addEventListener('click', () => {
+  if (!window.confirm('RESET GLOBAL: This will clear ALL history on the SERVER and stop prediction. Continue?')) return;
+  fetch('/api/reset', { method: 'POST' })
+    .then(() => {
+      showRiskToast('Global reset complete.');
+    })
+    .catch(() => showRiskToast('Reset failed — check server.'));
+});
+
+document.getElementById('historyFoldBtn').addEventListener('click', toggleHistoryFold);
+document.getElementById('historyPrevBtn').addEventListener('click', () => goToHistoryPage(historyOlderPage - 1));
+document.getElementById('historyNextBtn').addEventListener('click', () => goToHistoryPage(historyOlderPage + 1));
+document.getElementById('notifySaveBtn').addEventListener('click', saveNotifyConfig);
+document.getElementById('notifyTopicInput').addEventListener('input', function() {
+  const topicPreview = document.getElementById('notifyTopicPreview');
+  if (topicPreview) topicPreview.textContent = this.value.trim() || 'wingo-ali';
+});
+
+// ══════════════════════════════════════════════════════════
+//  WELCOME MODAL
+// ══════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  const WELCOME_KEY = '92pkr-welcome-modal-last-shown';
+  const WELCOME_INTERVAL = 30 * 60 * 1000;
+  try {
+    const lastShown = localStorage.getItem(WELCOME_KEY);
+    const now = Date.now();
+    if (!lastShown || (now - parseInt(lastShown)) >= WELCOME_INTERVAL) {
+      document.getElementById('welcomeModal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+      localStorage.setItem(WELCOME_KEY, now.toString());
+    }
+  } catch(e) {
+    document.getElementById('welcomeModal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+  document.getElementById('closeWelcomeBtn').onclick = function() {
+    document.getElementById('welcomeModal').classList.remove('show');
+    document.body.style.overflow = '';
+  };
+  loadNotifyConfig();
+  // Start WebSocket connection
+  connectWebSocket();
+});
+
+// ══════════════════════════════════════════════════════════
+//  PREDICTOR — all computation now runs on server
+// ══════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════
+//  MARTINGALE TRACKER — thin client, state lives on server
+// ══════════════════════════════════════════════════════════
+var mg_localState = null;
+
+function mg_applyCollapsedUI() {
+  var body = document.getElementById('mg-body');
+  var hdrR = document.getElementById('mg-header-right');
+  if (!body || !hdrR) return;
+  var collapsed = mg_localState ? mg_localState._collapsed : false;
+  body.style.display = collapsed ? 'none' : 'block';
+  hdrR.textContent = collapsed ? 'Click to expand' : 'Click to collapse';
+}
+
+function mg_togglePanel() {
+  if (mg_localState) mg_localState._collapsed = !mg_localState._collapsed;
+  else mg_localState = { _collapsed: true };
+  mg_applyCollapsedUI();
+}
+
+function mg_stageColor(i, total) {
+  if (total <= 1) return '#818cf8';
+  var r = i / (total - 1);
+  if (r < 0.25) return '#22c55e';
+  if (r < 0.50) return '#a3e635';
+  if (r < 0.75) return '#f97316';
+  return '#ef4444';
+}
+
+function mg_stageColorByCum(cumSum, balance) {
+  if (balance <= 0) return '#ef4444';
+  var ratio = cumSum / balance;
+  if (ratio > 1.0)  return '#ef4444';
+  if (ratio > 0.85) return '#f97316';
+  if (ratio > 0.60) return '#fde047';
+  return '#22c55e';
+}
+
+function mg_fmt2(n) { return n.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function mg_fmtI(n) { return Math.round(n).toLocaleString('en-PK'); }
+
+function mg_start() {
+  var startBal    = parseFloat(document.getElementById('mg-startBal').value)    || 25000;
+  var baseBet     = parseFloat(document.getElementById('mg-baseBet').value)     || 15;
+  var lossMulti   = parseFloat(document.getElementById('mg-lossMulti').value)   || 2;
+  var payoutMulti = parseFloat(document.getElementById('mg-payoutMulti').value) || 1.96;
+  var stageInputs = document.querySelectorAll('#mg-stage-inputs .mg-stage-val');
+  var setupBets = [];
+  if (stageInputs.length > 0) {
+    for (var i = 0; i < stageInputs.length; i++) {
+      var v = parseFloat(stageInputs[i].value);
+      if (v > 0) setupBets.push(v);
+    }
+  }
+  if (setupBets.length === 0) {
+    setupBets = [baseBet];
+    for (var j = 0; j < 9; j++) setupBets.push(Math.round(setupBets[setupBets.length - 1] * lossMulti));
+  }
+
+  fetch('/api/mg/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ startBal, baseBet, lossMulti, payoutMulti, setupBets })
+  }).then(res => res.json()).then(data => {
+    if (data.ok) mg_renderFromState(data.mgState);
+    showRiskToast('Session started!');
+  });
+}
+
+function mg_reset() {
+  if (!confirm('Reset the Martingale session?')) return;
+  fetch('/api/mg/reset', { method: 'POST' }).then(res => res.json()).then(data => {
+    if (data.ok) mg_renderFromState(data.mgState);
+    showRiskToast('Session reset.');
+  });
+}
+
+function mg_endSession() {
+  if (!confirm('End session and keep balance?')) return;
+  fetch('/api/mg/end', { method: 'POST' }).then(res => res.json()).then(data => {
+    if (data.ok) mg_renderFromState(data.mgState);
+    showRiskToast('Session ended.');
+  });
+}
+
+function mg_autoFillStages() {
+  var base  = parseFloat(document.getElementById('mg-baseBet').value)   || 15;
+  var multi = parseFloat(document.getElementById('mg-lossMulti').value) || 2;
+  var bets = [base];
+  for (var i = 0; i < 9; i++) bets.push(Math.round(bets[bets.length - 1] * multi));
+  mg_renderStageInputs(bets);
+}
+
+function mg_addStage() {
+  var container = document.getElementById('mg-stage-inputs');
+  var inputs = container.querySelectorAll('.mg-stage-val');
+  var last = inputs.length > 0 ? parseFloat(inputs[inputs.length - 1].value) : 15;
+  var multi = parseFloat(document.getElementById('mg-lossMulti').value) || 2;
+  var bets = [];
+  for (var i = 0; i < inputs.length; i++) bets.push(parseFloat(inputs[i].value));
+  bets.push(Math.round(last * multi));
+  mg_renderStageInputs(bets);
+}
+
+function mg_removeLastStage() {
+  var container = document.getElementById('mg-stage-inputs');
+  var inputs = container.querySelectorAll('.mg-stage-val');
+  if (inputs.length <= 1) { showRiskToast('Need at least 1 stage.'); return; }
+  var bets = [];
+  for (var i = 0; i < inputs.length - 1; i++) bets.push(parseFloat(inputs[i].value));
+  mg_renderStageInputs(bets);
+}
+
+function mg_renderStageInputs(bets) {
+  var container = document.getElementById('mg-stage-inputs');
+  if (!container || !bets) return;
+  var balance = parseFloat(document.getElementById('mg-startBal').value) || 25000;
+  var html = '', total = bets.length, cumSum = 0;
+  for (var i = 0; i < total; i++) {
+    cumSum += bets[i];
+    var color  = mg_stageColorByCum(cumSum, balance);
+    var isBust = cumSum > balance;
+    html += '<div style="display:flex;flex-direction:column;gap:3px;">' +
+      '<div class="mg-stage-input-lbl" style="color:' + color + ';">' + (isBust ? '! ' : '') + 'S' + (i + 1) + '</div>' +
+      '<input class="mg-input mg-stage-val" type="number" min="1" value="' + Math.round(bets[i]) + '" data-idx="' + i + '" style="border-color:' + color + '44;">' +
+    '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function mg_renderFromState(s) {
+  mg_localState = s || {};
+  var setup   = document.getElementById('mg-setup');
+  var tracker = document.getElementById('mg-tracker');
+
+  if (!s || !s.active) {
+    if (setup)   setup.style.display   = 'block';
+    if (tracker) tracker.style.display = 'none';
+    mg_applyCollapsedUI();
+    return;
+  }
+
+  if (setup)   setup.style.display   = 'none';
+  if (tracker) tracker.style.display = 'block';
+
+  document.getElementById('mg-stageDisp').textContent = 'S' + (s.stage + 1);
+  document.getElementById('mg-betDisp').textContent   = mg_fmtI(s.bet) + ' PKR';
+  var balEl = document.getElementById('mg-balDisp');
+  balEl.textContent = mg_fmt2(s.balance) + ' PKR';
+  balEl.style.color = s.balance >= s.startBal ? '#22c55e' : '#f87171';
+  var plEl = document.getElementById('mg-plDisp');
+  plEl.textContent = (s.sessionPL >= 0 ? '+' : '') + mg_fmt2(s.sessionPL) + ' PKR';
+  plEl.style.color = s.sessionPL >= 0 ? '#22c55e' : '#f87171';
+
+  // Chips
+  var bets = s.BETS || [];
+  var chipsHtml = '', total = bets.length;
+  var bustIdx = -1, sim = s.balance;
+  for (var j = s.stage; j < total; j++) {
+    if (sim < bets[j]) { bustIdx = j; break; }
+    sim -= bets[j];
+  }
+  var safeCount = bustIdx === -1 ? (total - s.stage) : (bustIdx - s.stage);
+  var remaining = total - s.stage;
+  var coverPct  = remaining > 0 ? Math.min(100, Math.round(safeCount / remaining * 100)) : 100;
+  var barColor  = coverPct >= 60 ? '#22c55e' : coverPct >= 30 ? '#fde047' : '#ef4444';
+  var coverLabel;
+  if (bustIdx === -1)
+    coverLabel = '<span style="color:#22c55e">Covers all remaining stages</span>';
+  else if (safeCount === 0)
+    coverLabel = '<span style="color:#ef4444">Balance cannot cover current stage (S' + (s.stage + 1) + ')</span>';
+  else
+    coverLabel = '<span style="color:' + barColor + '">Covers ' + safeCount + ' more stage' + (safeCount > 1 ? 's' : '') + ' — busts at S' + (bustIdx + 1) + '</span>';
+  chipsHtml += '<div class="mg-balance-cover">' +
+    '<div class="mg-balance-cover-lbl">' + coverLabel + '</div>' +
+    '<div class="mg-balance-cover-track"><div class="mg-balance-cover-fill" style="width:' + coverPct + '%;background:' + barColor + ';"></div></div>' +
+  '</div>';
+  for (var i = 0; i < total; i++) {
+    var color = mg_stageColor(i, total);
+    if (i === bustIdx) {
+      chipsHtml += '<div class="mg-chip-bust" title="Balance runs out here">! S' + (i+1) + ':' + mg_fmtI(bets[i]) + '</div>';
+    } else if (i < s.stage) {
+      chipsHtml += '<div class="mg-chip past">S' + (i+1) + ':' + mg_fmtI(bets[i]) + '</div>';
+    } else if (i === s.stage) {
+      chipsHtml += '<div class="mg-chip active" style="background:' + color + '20;border-color:' + color + ';color:' + color + ';box-shadow:0 0 12px ' + color + '55;transform:scale(1.06);">S' + (i+1) + ':' + mg_fmtI(bets[i]) + '</div>';
+    } else if (bustIdx !== -1 && i > bustIdx) {
+      chipsHtml += '<div class="mg-chip future" style="opacity:0.18;">S' + (i+1) + ':' + mg_fmtI(bets[i]) + '</div>';
+    } else {
+      chipsHtml += '<div class="mg-chip future" style="border-color:' + color + '30;color:' + color + '70;">S' + (i+1) + ':' + mg_fmtI(bets[i]) + '</div>';
+    }
+  }
+  document.getElementById('mg-chips').innerHTML = chipsHtml;
+
+  // Warnings
+  var warnEl = document.getElementById('mg-warn');
+  var msgs = [], cls = '';
+  var covered = 0, simW = s.balance;
+  for (var k = s.stage; k < bets.length; k++) {
+    if (simW < bets[k]) break;
+    simW -= bets[k]; covered++;
+  }
+  var remainingW = bets.length - s.stage;
+  var bustStageN = s.stage + covered + 1;
+  if (covered === 0) {
+    msgs.push('CRITICAL — Balance (' + mg_fmt2(s.balance) + ' PKR) cannot cover current bet of ' + mg_fmtI(bets[s.stage]) + ' PKR. Stop now!');
+    cls = 'mg-warn balance-warn';
+  } else if (covered === 1) {
+    msgs.push('Critically low — balance covers only this stage. S' + bustStageN + ' will bust you.');
+    cls = 'mg-warn balance-warn';
+  } else if (covered <= 3) {
+    msgs.push('Caution — balance covers ' + covered + ' of ' + remainingW + ' remaining stages. Busts at S' + bustStageN + '.');
+    cls = 'mg-warn streak-warn';
+  }
+  if (s.lossStreak >= 4) {
+    var chainLost = bets.slice(0, s.stage).reduce(function(a, b) { return a + b; }, 0);
+    msgs.push('Loss streak x' + s.lossStreak + ' — total lost in chain: ' + mg_fmtI(chainLost) + ' PKR');
+    if (!cls) cls = 'mg-warn streak-warn';
+  }
+  if (msgs.length) { warnEl.className = cls; warnEl.innerHTML = msgs.join('<br>'); warnEl.style.display = 'block'; }
+  else warnEl.style.display = 'none';
+
+  // Log
+  var tbody = document.getElementById('mg-log-body');
+  var empty = document.getElementById('mg-empty-log');
+  if (!s.log || !s.log.length) { tbody.innerHTML = ''; empty.style.display = 'block'; }
+  else {
+    empty.style.display = 'none';
+    var logHtml = '';
+    for (var li = 0; li < s.log.length; li++) {
+      var r = s.log[li], logCls = r.win ? 'mg-tr-win' : 'mg-tr-loss';
+      logHtml += '<tr class="' + logCls + '">' +
+        '<td>' + (s.log.length - li) + '</td>' +
+        '<td style="font-size:0.55rem;color:#64748b;">' + r.period + '</td>' +
+        '<td>' + (r.win ? 'WIN' : 'LOSS') + '</td>' +
+        '<td>S' + (r.stage + 1) + '</td>' +
+        '<td>' + mg_fmtI(r.bet) + '</td>' +
+        '<td>' + mg_fmt2(r.balance) + '</td>' +
+      '</tr>';
+    }
+    tbody.innerHTML = logHtml;
+  }
+
+  mg_applyCollapsedUI();
+}
+
+function mg_syncFromSnapshot(mgState) {
+  if (!mgState) return;
+  var prevCollapsed = mg_localState ? mg_localState._collapsed : false;
+  mg_localState = mgState;
+  mg_localState._collapsed = prevCollapsed;
+  mg_renderFromState(mg_localState);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('mg-startBtn').addEventListener('click', mg_start);
+  document.getElementById('mg-endBtn').addEventListener('click', mg_endSession);
+  document.getElementById('mg-resetBtn').addEventListener('click', mg_reset);
+  document.getElementById('mg-copyBtn').addEventListener('click', function() { showRiskToast('Copy not available in server mode.'); });
+  document.getElementById('mg-csvBtn').addEventListener('click', function() { showRiskToast('CSV not available in server mode.'); });
+  document.getElementById('mg-autoFillBtn').addEventListener('click', function() {
+    var base  = parseFloat(document.getElementById('mg-baseBet').value)   || 15;
+    var multi = parseFloat(document.getElementById('mg-lossMulti').value) || 2;
+    var bets = [base];
+    for (var i = 0; i < 9; i++) bets.push(Math.round(bets[bets.length - 1] * multi));
+    mg_renderStageInputs(bets);
+  });
+  document.getElementById('mg-addStageBtn').addEventListener('click', mg_addStage);
+  document.getElementById('mg-removeStageBtn').addEventListener('click', mg_removeLastStage);
+  mg_autoFillStages();
+});
+
+// ══════════════════════════════════════════════════════════
+//  FOCUS MODE
+// ══════════════════════════════════════════════════════════
+var focusModeActive = false;
+var focusSyncIv     = null;
+var fm_lastStage    = -1;
+
+function mg_playPopSound() {
+  try {
+    var ctx  = new (window.AudioContext || window.webkitAudioContext)();
+    var osc  = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.5, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.22);
+    osc.onended = function() { ctx.close(); };
+  } catch(e) {}
+}
+
+function toggleFocusMode() {
+  focusModeActive = !focusModeActive;
+  document.body.classList.toggle('focus-mode', focusModeActive);
+  document.getElementById('focusModeIcon').className = focusModeActive ? 'fa fa-compress' : 'fa fa-expand';
+  if (focusModeActive) {
+    syncFocusMode();
+    focusSyncIv = setInterval(syncFocusMode, 250);
+  } else {
+    clearInterval(focusSyncIv); focusSyncIv = null; fm_lastStage = -1;
+  }
+}
+
+function syncFocusMode() {
+  var predEl = document.getElementById('nextPrediction');
+  var fmPred = document.getElementById('fm-pred');
+  if (predEl && fmPred) {
+    var t = predEl.textContent.trim();
+    fmPred.textContent = t;
+    fmPred.className = 'fm-pred ' + (t === 'Big' ? 'big' : t === 'Small' ? 'small' : 'none');
+  }
+  var cdEl = document.getElementById('countdown');
+  var fmCd = document.getElementById('fm-countdown');
+  if (cdEl && fmCd) {
+    fmCd.textContent = cdEl.textContent;
+    fmCd.className = 'fm-countdown' + (cdEl.classList.contains('timer-red') ? ' urgent' : '');
+  }
+  var periodEl = document.getElementById('nextPeriod');
+  var fmPeriod = document.getElementById('fm-period');
+  if (periodEl && fmPeriod) fmPeriod.textContent = 'Period ' + periodEl.textContent;
+  var betRow  = document.getElementById('fm-bet-row');
+  var fmStage = document.getElementById('fm-stage');
+  var fmBet   = document.getElementById('fm-bet');
+  if (betRow) {
+    if (mg_localState && mg_localState.active) {
+      betRow.style.display = 'block';
+      var stageEl = document.getElementById('mg-stageDisp');
+      var betEl   = document.getElementById('mg-betDisp');
+      if (stageEl && fmStage) {
+        var newStage = mg_localState.stage;
+        if (newStage !== fm_lastStage) {
+          if (fm_lastStage !== -1 && newStage >= 2) mg_playPopSound();
+          fm_lastStage = newStage;
+        }
+        fmStage.textContent = stageEl.textContent;
+      }
+      if (betEl && fmBet) fmBet.textContent = betEl.textContent.replace(/\s*PKR$/, '');
+    } else {
+      betRow.style.display = 'none';
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  BACKTESTER MODULE (bt_ prefix) — runs on server
+// ══════════════════════════════════════════════════════════
+var bt_allRecords = [];
+var bt_lastResult = null;
+
+var bt_toastTimer = null;
+function bt_showToast(msg) {
+  var el = document.getElementById('btToast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(bt_toastTimer);
+  bt_toastTimer = setTimeout(function() { el.classList.remove('show'); }, 3000);
+}
+
+function bt_openModal() {
+  document.getElementById('btModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function bt_closeModal() {
+  document.getElementById('btModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function bt_parseAndLoad() {
+  var raw = document.getElementById('btDataInput').value.trim();
+  if (!raw) { bt_showToast('Paste data first!'); return; }
+  var records = [];
+  var re1 = /\[(\d+)\].*?Result:\s*(?:Big|Small)\((\d+)\)/g;
+  var m;
+  while ((m = re1.exec(raw)) !== null) {
+    records.push({ period: m[1], num: parseInt(m[2]) });
+  }
+  if (records.length === 0) {
+    var lines = raw.split('\n');
+    for (var i = 0; i < lines.length; i++) {
+      var parts = lines[i].trim().split(',');
+      if (parts.length >= 2) {
+        var period = parts[0].trim();
+        var num = parseInt(parts[1].trim());
+        if (/^\d+$/.test(period) && !isNaN(num) && num >= 0 && num <= 9)
+          records.push({ period: period, num: num });
+      }
+    }
+  }
+  if (records.length < 20) { bt_showToast('Only ' + records.length + ' records. Need at least 20.'); return; }
+  records.sort(function(a, b) { return a.period.localeCompare(b.period); });
+  bt_allRecords = records;
+  bt_resetUI();
+  bt_showToast(records.length + ' records loaded!');
+}
+
+function bt_loadJSON(input) {
+  var file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var parsed;
+    try { parsed = JSON.parse(e.target.result); } catch(err) { bt_showToast('Invalid JSON.'); return; }
+    if (!Array.isArray(parsed)) { bt_showToast('JSON must be an array.'); return; }
+    var records = [];
+    for (var i = 0; i < parsed.length; i++) {
+      var item = parsed[i];
+      var period = item.period !== undefined ? String(item.period) : null;
+      var num = item.num !== undefined ? parseInt(item.num) : null;
+      if (period && period.match(/^\d+$/) && num !== null && !isNaN(num) && num >= 0 && num <= 9)
+        records.push({ period: period, num: num });
+    }
+    if (records.length < 20) { bt_showToast('Only ' + records.length + ' valid records.'); return; }
+    records.sort(function(a, b) { return a.period.localeCompare(b.period); });
+    bt_allRecords = records;
+    bt_resetUI();
+    bt_showToast('JSON: ' + records.length + ' records loaded!');
+  };
+  reader.readAsText(file);
+}
+
+function bt_loadSample() {
+  var nums = [5,2,7,1,8,0,6,3,9,4,5,1,7,2,8,0,5,3,6,4,9,1,7,0,5,2,8,3,6,4,
+    9,1,5,0,7,2,8,3,6,4,5,1,9,2,7,0,8,3,6,4,5,1,7,2,9,0,8,3,5,4,
+    6,1,7,2,8,0,5,3,9,4,6,1,7,2,8,0,5,3,9,4];
+  var records = nums.map(function(n, i) {
+    return { period: String(51300 + i).padStart(8, '0'), num: n };
+  });
+  bt_allRecords = records;
+  bt_resetUI();
+  bt_showToast('Sample 80 records loaded!');
+}
+
+function bt_importFromAPI() {
+  const btn = document.getElementById('btApiImportBtn');
+  btn.disabled = true;
+  btn.textContent = 'Fetching...';
+  fetch('/api/history')
+    .then(res => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+    .then(data => {
+      const entries = data.history;
+      if (!Array.isArray(entries) || entries.length === 0) throw new Error('No entries in response');
+      const records = entries
+        .filter(e => e.num !== null && e.num !== undefined && e.actual !== 'loading...')
+        .map(e => ({ period: String(e.period || ''), num: parseInt(e.num, 10) }))
+        .filter(r => r.period && !isNaN(r.num));
+      if (records.length < 20) throw new Error('Too few valid records: ' + records.length);
+      records.sort((a, b) => a.period.localeCompare(b.period));
+      bt_allRecords = records;
+      bt_resetUI();
+      bt_showToast(records.length + ' records loaded from server history!');
+    })
+    .catch(err => { bt_showToast('Error: ' + err.message); })
+    .finally(() => { btn.disabled = false; btn.textContent = 'Import from API'; });
+}
+
+function bt_clearAll() {
+  bt_allRecords = [];
+  bt_lastResult = null;
+  document.getElementById('btDataInput').value = '';
+  bt_resetUI();
+  bt_showToast('Cleared.');
+}
+
+function bt_resetUI() {
+  document.getElementById('btProgressFill').style.width = '0%';
+  document.getElementById('btHistBody').innerHTML = '';
+  document.getElementById('btHistEmpty').style.display = 'block';
+  document.getElementById('btDots').innerHTML = '';
+  var hasData = bt_allRecords.length > 0;
+  document.getElementById('btPlayBtn').disabled = !hasData;
+  document.getElementById('btResetBtn').disabled = true;
+  document.getElementById('btStepBtn').disabled = true;
+  document.getElementById('btRunAllBtn').disabled = !hasData;
+  document.getElementById('btStatusMsg').textContent = hasData
+    ? bt_allRecords.length + ' records — ' + Math.max(0, bt_allRecords.length - 15) + ' rounds'
+    : 'Load data to start';
+}
+
+function bt_togglePlay() { bt_runAllInstant(); }
+
+function bt_stepOnce() { bt_runAllInstant(); }
+
+function bt_runAllInstant() {
+  if (bt_allRecords.length < 20) { bt_showToast('Not enough data.'); return; }
+  document.getElementById('btPlayBtn').disabled = true;
+  document.getElementById('btRunAllBtn').disabled = true;
+  document.getElementById('btStepBtn').disabled = true;
+  document.getElementById('btStatusMsg').textContent = 'Running on server...';
+  document.getElementById('btProgressFill').style.width = '30%';
+
+  fetch('/api/backtest/run', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ records: bt_allRecords })
+  })
+  .then(res => { document.getElementById('btProgressFill').style.width = '80%'; return res.json(); })
+  .then(data => {
+    document.getElementById('btProgressFill').style.width = '100%';
+    if (!data.ok) throw new Error(data.error || 'Backtest failed');
+    bt_lastResult = data;
+    bt_renderServerResult(data);
+    document.getElementById('btStatusMsg').textContent = 'Complete — ' + data.stats.winRate + '% WR';
+    bt_showToast('Done! ' + data.stats.winRate + '% win rate, max streak: ' + data.stats.maxLossStreak);
+  })
+  .catch(err => {
+    document.getElementById('btStatusMsg').textContent = 'Error: ' + err.message;
+    bt_showToast('Error: ' + err.message);
+  })
+  .finally(() => {
+    document.getElementById('btPlayBtn').disabled = false;
+    document.getElementById('btResetBtn').disabled = false;
+    document.getElementById('btRunAllBtn').disabled = false;
+    document.getElementById('btStepBtn').disabled = false;
+    setTimeout(() => { document.getElementById('btProgressFill').style.width = '0%'; }, 1500);
+  });
+}
+
+function bt_renderServerResult(data) {
+  var s = data.stats;
+  var log = data.log;
+
+  document.getElementById('btSWins').textContent = s.wins;
+  document.getElementById('btSLosses').textContent = s.losses;
+  document.getElementById('btSAcc').textContent = s.winRate + '%';
+  document.getElementById('btSMaxStreak').textContent = s.maxLossStreak;
+  document.getElementById('btSCurStreak').textContent = '—';
+  document.getElementById('btSTotal').textContent = s.total;
+
+  var dots = log.slice(-200).map(function(e) { return e.correct; });
+  bt_renderDots(dots);
+
+  var tbody = document.getElementById('btHistBody');
+  tbody.innerHTML = '';
+  document.getElementById('btHistEmpty').style.display = 'none';
+  document.getElementById('btLogCount').textContent = log.length + ' entries';
+  var show = log.slice(-500);
+  var frag = document.createDocumentFragment();
+  for (var i = 0; i < show.length; i++) {
+    var r = show[i];
+    var tr = document.createElement('tr');
+    tr.innerHTML = bt_buildRowHTML(r, s.maxLossStreak, s.maxLossStreakRound);
+    frag.appendChild(tr);
+  }
+  tbody.appendChild(frag);
+}
+
+function bt_ordinal(n) {
+  if (n === 0) return '0';
+  var s = ['th','st','nd','rd'];
+  var v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function bt_buildRowHTML(r, maxStreak, maxRound) {
+  var logicLabels = {
+    'base': '<span class="dim-cell">Base</span>',
+    'anti-streak': '<span style="color:#fbbf24;font-size:0.48rem;">Anti-Streak</span>',
+    'hist-override': '<span style="color:#6366f1;font-size:0.48rem;">Hist Override</span>',
+    'adaptive': '<span style="color:#f97316;font-size:0.48rem;">Adaptive</span>'
+  };
+  var logicLabel = logicLabels[r.logic] || '<span class="dim-cell">—</span>';
+  var streakCell = r.lossStreak > 0
+    ? '<span style="color:#ef4444">' + bt_ordinal(r.lossStreak) + '</span>'
+    : '<span class="dim-cell">—</span>';
+  var isMax = r.n === maxRound;
+  var rowCls = isMax ? 'bt-row-max-streak' : '';
+  return '<tr class="' + rowCls + '">' +
+    '<td class="dim-cell">' + r.n + '</td>' +
+    '<td class="dim-cell">' + r.period + '</td>' +
+    '<td class="' + (r.pred === 'Big' ? 'big-cell' : 'sm-cell') + '">' + r.pred + '</td>' +
+    '<td class="' + (r.actual === 'Big' ? 'big-cell' : 'sm-cell') + '">' + r.actual + '</td>' +
+    '<td class="' + (r.correct ? 'win-cell' : 'loss-cell') + '">' + (r.correct ? 'WIN' : 'LOSS') + '</td>' +
+    '<td class="dim-cell">' + streakCell + '</td>' +
+    '<td>' + logicLabel + '</td></tr>';
+}
+
+function bt_renderDots(dotArray) {
+  var container = document.getElementById('btDots');
+  var empty = document.getElementById('btDotsEmpty');
+  if (!dotArray || dotArray.length === 0) {
+    container.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  container.innerHTML = dotArray.map(function(w) {
+    return '<div class="bt-dot ' + (w ? 'w' : 'l') + '"></div>';
+  }).join('');
+}
+
+function bt_updateSpeed() {}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    var modal = document.getElementById('btModal');
+    if (modal && modal.classList.contains('open')) bt_closeModal();
+  }
+});
+</script>
+</body>
+</html>

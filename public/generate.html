@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>WinGO Dataset Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;0,800;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0a0b14; --surface: #0f1120; --card: #131628;
+  --border: rgba(99,102,241,0.18); --accent: #6366f1;
+  --green: #22c55e; --red: #ef4444; --yellow: #fbbf24; --cyan: #06b6d4;
+  --text: #e2e8f0; --muted: #475569;
+  --mono: 'JetBrains Mono', monospace; --display: 'Syne', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--mono); min-height: 100vh; overflow-x: hidden;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px);
+  background-size: 32px 32px; pointer-events: none;
+}
+.app { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 10px; }
+.header h1 { font-family: var(--display); font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; }
+.header h1 span { color: var(--accent); }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.badge {
+  font-size: 0.55rem; letter-spacing: 0.15em; text-transform: uppercase;
+  background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.3);
+  color: var(--accent); padding: 4px 10px; border-radius: 20px;
+}
+.nav-link {
+  font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); text-decoration: none; padding: 4px 10px;
+  border: 1px solid var(--border); border-radius: 20px; transition: all 0.15s;
+}
+.nav-link:hover { color: var(--text); border-color: rgba(99,102,241,0.5); }
+
+.panel {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px; margin-bottom: 18px;
+}
+.panel-title {
+  font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 12px;
+}
+
+button {
+  font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.08em;
+  text-transform: uppercase; cursor: pointer; border-radius: 8px;
+  padding: 9px 18px; border: 1px solid; transition: all 0.15s;
+}
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+.btn-primary:hover { opacity: 0.85; }
+.btn-green { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.4); color: var(--green); font-weight: 700; }
+.btn-green:hover { background: rgba(34,197,94,0.22); }
+.btn-cyan { background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.4); color: var(--cyan); font-weight: 700; }
+.btn-cyan:hover { background: rgba(6,182,212,0.22); }
+.btn-yellow { background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.4); color: var(--yellow); font-weight: 700; }
+.btn-yellow:hover { background: rgba(251,191,36,0.22); }
+.btn-outline { background: transparent; border-color: var(--border); color: var(--muted); }
+.btn-outline:hover { color: var(--text); border-color: rgba(99,102,241,0.5); }
+button:disabled { opacity: 0.35; cursor: not-allowed; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+input[type=number], input[type=text] {
+  background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 14px; color: var(--text);
+  font-family: var(--mono); font-size: 0.75rem; outline: none;
+  transition: border-color 0.15s; width: 160px;
+}
+input:focus { border-color: var(--accent); }
+label { font-size: 0.55rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+
+.form-row { display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+
+.stats-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 10px; margin-bottom: 18px;
+}
+@media(max-width: 700px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 10px; text-align: center;
+}
+.stat-lbl { font-size: 0.45rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.stat-val { font-family: var(--display); font-size: 1.5rem; font-weight: 800; }
+.stat-val.green { color: var(--green); }
+.stat-val.red { color: var(--red); }
+.stat-val.cyan { color: var(--cyan); }
+.stat-val.yellow { color: var(--yellow); }
+.stat-val.accent { color: var(--accent); }
+.stat-val.white { color: var(--text); }
+
+.preview-wrap {
+  max-height: 300px; overflow-y: auto; border: 1px solid var(--border);
+  border-radius: 10px; background: rgba(0,0,0,0.3);
+}
+.preview-wrap::-webkit-scrollbar { width: 4px; }
+.preview-wrap::-webkit-scrollbar-track { background: transparent; }
+.preview-wrap::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 2px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.62rem; }
+th {
+  padding: 7px 10px; text-align: left; color: var(--muted);
+  background: rgba(0,0,0,0.3); font-size: 0.45rem; letter-spacing: 0.1em;
+  text-transform: uppercase; position: sticky; top: 0; z-index: 1;
+  border-bottom: 1px solid var(--border);
+}
+td { padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(99,102,241,0.04); }
+.td-big { color: #f472b6; }
+.td-sm { color: var(--green); }
+
+.dist-bar {
+  display: flex; height: 24px; border-radius: 6px; overflow: hidden; margin-top: 10px;
+  border: 1px solid var(--border);
+}
+.dist-big { background: rgba(244,114,182,0.35); display: flex; align-items: center; justify-content: center; font-size: 0.5rem; font-weight: 700; color: #f472b6; }
+.dist-small { background: rgba(34,197,94,0.25); display: flex; align-items: center; justify-content: center; font-size: 0.5rem; font-weight: 700; color: var(--green); }
+
+.progress-wrap { margin-bottom: 14px; display: none; }
+.progress-bar { height: 3px; background: rgba(99,102,241,0.15); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--cyan)); border-radius: 2px; transition: width 0.3s; }
+
+.backtest-results { margin-top: 18px; }
+.bt-summary {
+  display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+  padding: 14px 18px; background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border); border-radius: 10px; margin-bottom: 14px;
+}
+.bt-item { display: flex; flex-direction: column; gap: 2px; }
+.bt-label { font-size: 0.42rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+.bt-value { font-size: 0.85rem; font-weight: 800; font-family: var(--display); }
+
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--card); border: 1px solid var(--border);
+  padding: 10px 22px; border-radius: 30px;
+  font-size: 0.65rem; letter-spacing: 0.05em;
+  opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100;
+  white-space: nowrap;
+}
+#toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>WinGO <span>Dataset Generator</span></h1>
+    <div class="header-right">
+      <a href="/" class="nav-link">← Live Dashboard</a>
+      <a href="/backtest.html" class="nav-link">📊 Backtester</a>
+      <span class="badge">Synthetic Data</span>
+    </div>
+  </div>
+
+  <!-- GENERATOR CONTROLS -->
+  <div class="panel">
+    <div class="panel-title">⚙️ Generator Settings</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Data Points</label>
+        <input type="number" id="countInput" value="5000" min="50" max="50000" step="100"/>
+      </div>
+      <div class="form-group">
+        <label>Seed (optional)</label>
+        <input type="number" id="seedInput" placeholder="Random"/>
+      </div>
+      <button class="btn-primary" id="generateBtn" onclick="generate()">🎲 Generate Dataset</button>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
+      <button class="btn-outline" style="font-size:0.5rem;padding:5px 12px;" onclick="setCount(1000)">1K</button>
+      <button class="btn-outline" style="font-size:0.5rem;padding:5px 12px;" onclick="setCount(5000)">5K</button>
+      <button class="btn-outline" style="font-size:0.5rem;padding:5px 12px;" onclick="setCount(10000)">10K</button>
+      <button class="btn-outline" style="font-size:0.5rem;padding:5px 12px;" onclick="setCount(25000)">25K</button>
+      <button class="btn-outline" style="font-size:0.5rem;padding:5px 12px;" onclick="setCount(50000)">50K</button>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <!-- RESULTS (hidden until generation) -->
+  <div id="resultsSection" style="display:none;">
+
+    <!-- DATASET STATS -->
+    <div class="panel">
+      <div class="panel-title">📊 Dataset Statistics</div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-lbl">Total</div><div class="stat-val white" id="sTotal">0</div></div>
+        <div class="stat-card"><div class="stat-lbl">Big</div><div class="stat-val" style="color:#f472b6" id="sBig">0</div></div>
+        <div class="stat-card"><div class="stat-lbl">Small</div><div class="stat-val green" id="sSmall">0</div></div>
+        <div class="stat-card"><div class="stat-lbl">Big %</div><div class="stat-val" style="color:#f472b6" id="sBigPct">0</div></div>
+        <div class="stat-card"><div class="stat-lbl">Max Consecutive</div><div class="stat-val yellow" id="sMaxCons">0</div></div>
+      </div>
+      <div class="dist-bar" id="distBar"></div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="panel">
+      <div class="panel-title">🚀 Actions</div>
+      <div class="btn-row">
+        <button class="btn-green" id="backtestBtn" onclick="runBacktest()">▶ Run Backtest on This Data</button>
+        <button class="btn-cyan" onclick="downloadJSON()">📥 Download JSON</button>
+        <button class="btn-yellow" onclick="downloadBacktesterFormat()">📥 Backtester Format</button>
+      </div>
+    </div>
+
+    <!-- BACKTEST PROGRESS -->
+    <div class="progress-wrap" id="btProgressWrap">
+      <div class="progress-bar"><div class="progress-fill" id="btProgressFill" style="width:0%"></div></div>
+    </div>
+
+    <!-- BACKTEST RESULTS -->
+    <div id="backtestSection" style="display:none;" class="backtest-results">
+      <div class="panel">
+        <div class="panel-title">🎯 Backtest Results</div>
+        <div class="bt-summary">
+          <div class="bt-item"><div class="bt-label">Rounds</div><div class="bt-value" style="color:var(--text)" id="btRounds">0</div></div>
+          <div class="bt-item"><div class="bt-label">Wins</div><div class="bt-value" style="color:var(--green)" id="btWins">0</div></div>
+          <div class="bt-item"><div class="bt-label">Losses</div><div class="bt-value" style="color:var(--red)" id="btLosses">0</div></div>
+          <div class="bt-item"><div class="bt-label">Win Rate</div><div class="bt-value" style="color:var(--cyan)" id="btWinRate">—</div></div>
+          <div class="bt-item"><div class="bt-label">Max Loss Streak</div><div class="bt-value" style="color:var(--yellow)" id="btMaxLoss">0</div></div>
+          <div class="bt-item"><div class="bt-label">Max Win Streak</div><div class="bt-value" style="color:var(--green)" id="btMaxWin">0</div></div>
+          <div class="bt-item"><div class="bt-label">Anti-Streak</div><div class="bt-value" style="color:var(--yellow)" id="btAntiStreak">0</div></div>
+          <div class="bt-item"><div class="bt-label">Hist Override</div><div class="bt-value" style="color:var(--accent)" id="btHistOvr">0</div></div>
+        </div>
+
+        <!-- Streak dots -->
+        <div style="margin-top:14px;">
+          <div style="font-size:0.48rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Round-by-Round</div>
+          <div id="btDots" style="display:flex;flex-wrap:wrap;gap:2px;"></div>
+        </div>
+
+        <!-- Loss streak distribution -->
+        <div style="margin-top:18px;">
+          <div style="font-size:0.48rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Loss Streak Distribution</div>
+          <div id="btDistGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="panel">
+      <div class="panel-title">👁️ Data Preview <span id="previewInfo" style="color:var(--accent);font-size:0.5rem;"></span></div>
+      <div class="preview-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Period</th><th>Num</th><th>Big/Small</th><th>Color</th></tr></thead>
+          <tbody id="previewBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+let dataset = null;
+let toastTimer;
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function setCount(n) {
+  document.getElementById('countInput').value = n;
+}
+
+async function generate() {
+  const count = parseInt(document.getElementById('countInput').value, 10);
+  const seedVal = document.getElementById('seedInput').value.trim();
+  const seed = seedVal ? parseInt(seedVal, 10) : null;
+
+  if (isNaN(count) || count < 50) { toast('Minimum 50 data points'); return; }
+  if (count > 50000) { toast('Maximum 50,000 data points'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating...';
+  const pw = document.getElementById('progressWrap');
+  pw.style.display = 'block';
+  document.getElementById('progressFill').style.width = '30%';
+
+  try {
+    const body = { count };
+    if (seed !== null && !isNaN(seed)) body.seed = seed;
+
+    const res = await fetch('/api/generate-dataset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    document.getElementById('progressFill').style.width = '80%';
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Generation failed');
+
+    dataset = data;
+    document.getElementById('progressFill').style.width = '100%';
+    renderResults(data);
+    document.getElementById('resultsSection').style.display = 'block';
+    document.getElementById('backtestSection').style.display = 'none';
+    toast(`✓ Generated ${data.count} data points`);
+  } catch (err) {
+    toast('✗ ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🎲 Generate Dataset';
+    setTimeout(() => { pw.style.display = 'none'; }, 1200);
+  }
+}
+
+function renderResults(data) {
+  const s = data.stats;
+  document.getElementById('sTotal').textContent = data.count.toLocaleString();
+  document.getElementById('sBig').textContent = s.big.toLocaleString();
+  document.getElementById('sSmall').textContent = s.small.toLocaleString();
+  document.getElementById('sBigPct').textContent = s.bigPct + '%';
+  document.getElementById('sMaxCons').textContent = s.maxConsecutive;
+
+  // Distribution bar
+  const bar = document.getElementById('distBar');
+  bar.innerHTML = `
+    <div class="dist-big" style="width:${s.bigPct}%">Big ${s.bigPct}%</div>
+    <div class="dist-small" style="width:${s.smallPct}%">Small ${s.smallPct}%</div>
+  `;
+
+  // Preview table (first + last 50)
+  const tbody = document.getElementById('previewBody');
+  const records = data.records;
+  const showFirst = 50, showLast = 50;
+  let rows = '';
+
+  const firstSlice = records.slice(0, showFirst);
+  firstSlice.forEach((r, i) => {
+    const cls = r.num > 4 ? 'td-big' : 'td-sm';
+    rows += `<tr><td>${i + 1}</td><td style="color:var(--muted);font-size:0.5rem">${r.period}</td><td class="${cls}">${r.num}</td><td class="${cls}">${r.bigSmall}</td><td style="font-size:0.5rem;color:var(--muted)">${r.color}</td></tr>`;
+  });
+
+  if (records.length > showFirst + showLast) {
+    rows += `<tr><td colspan="5" style="text-align:center;color:var(--accent);padding:12px;font-size:0.55rem;">... ${(records.length - showFirst - showLast).toLocaleString()} rows hidden ...</td></tr>`;
+    const lastSlice = records.slice(-showLast);
+    lastSlice.forEach((r, i) => {
+      const idx = records.length - showLast + i + 1;
+      const cls = r.num > 4 ? 'td-big' : 'td-sm';
+      rows += `<tr><td>${idx}</td><td style="color:var(--muted);font-size:0.5rem">${r.period}</td><td class="${cls}">${r.num}</td><td class="${cls}">${r.bigSmall}</td><td style="font-size:0.5rem;color:var(--muted)">${r.color}</td></tr>`;
+    });
+  }
+
+  tbody.innerHTML = rows;
+  document.getElementById('previewInfo').textContent = `(showing ${Math.min(records.length, showFirst + showLast)} of ${records.length.toLocaleString()})`;
+}
+
+function downloadJSON() {
+  if (!dataset) { toast('Generate data first'); return; }
+  const blob = new Blob([JSON.stringify(dataset.records, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `wingo-synthetic-${dataset.count}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✓ Downloaded full JSON');
+}
+
+function downloadBacktesterFormat() {
+  if (!dataset) { toast('Generate data first'); return; }
+  // Backtester only needs {period, num}
+  const minimal = dataset.records.map(r => ({ period: r.period, num: r.num }));
+  const blob = new Blob([JSON.stringify(minimal, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `wingo-synthetic-backtester-${dataset.count}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✓ Downloaded backtester format');
+}
+
+async function runBacktest() {
+  if (!dataset || !dataset.records.length) { toast('Generate data first'); return; }
+
+  const btn = document.getElementById('backtestBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running Backtest...';
+  const pw = document.getElementById('btProgressWrap');
+  pw.style.display = 'block';
+  document.getElementById('btProgressFill').style.width = '30%';
+
+  try {
+    // Send to server-side backtester (uses predictor.js — same as live server)
+    const res = await fetch('/api/backtest/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ records: dataset.records })
+    });
+
+    document.getElementById('btProgressFill').style.width = '85%';
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Backtest failed');
+
+    document.getElementById('btProgressFill').style.width = '100%';
+    renderBacktestResults(data);
+    document.getElementById('backtestSection').style.display = 'block';
+    toast(`✓ Backtest: ${data.stats.winRate}% WR, Max streak: ${data.stats.maxLossStreak}`);
+  } catch (err) {
+    toast('✗ Backtest error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '▶ Run Backtest on This Data';
+    setTimeout(() => { pw.style.display = 'none'; }, 1200);
+  }
+}
+
+function renderBacktestResults(data) {
+  const s = data.stats;
+  document.getElementById('btRounds').textContent = s.total.toLocaleString();
+  document.getElementById('btWins').textContent = s.wins.toLocaleString();
+  document.getElementById('btLosses').textContent = s.losses.toLocaleString();
+  document.getElementById('btWinRate').textContent = s.winRate + '%';
+  document.getElementById('btMaxLoss').textContent = s.maxLossStreak;
+  document.getElementById('btMaxWin').textContent = s.maxWinStreak;
+  document.getElementById('btAntiStreak').textContent = s.antiStreakCount;
+  document.getElementById('btHistOvr').textContent = s.histOverrideCount;
+
+  // Streak dots (limit to last 500 for performance)
+  const log = data.log;
+  const dotsEl = document.getElementById('btDots');
+  const showLog = log.slice(-500);
+  let dotsHtml = '';
+  for (const r of showLog) {
+    const cls = r.correct ? 'w' : 'l';
+    const bg = r.correct ? 'var(--green)' : 'var(--red)';
+    dotsHtml += `<div style="width:8px;height:8px;border-radius:2px;background:${bg}" title="R${r.n}: ${r.pred}→${r.actual} ${r.correct ? '✓' : '✗ L' + r.lossStreak}"></div>`;
+  }
+  if (log.length > 500) {
+    dotsHtml = `<div style="font-size:0.45rem;color:var(--muted);margin-right:6px;">...${log.length - 500} earlier</div>` + dotsHtml;
+  }
+  dotsEl.innerHTML = dotsHtml;
+
+  // Loss streak distribution
+  const distMap = {};
+  let cs = 0;
+  for (const r of log) {
+    if (!r.correct) { cs++; }
+    else { if (cs > 0) distMap[cs] = (distMap[cs] || 0) + 1; cs = 0; }
+  }
+  if (cs > 0) distMap[cs] = (distMap[cs] || 0) + 1;
+
+  const distGrid = document.getElementById('btDistGrid');
+  const distKeys = Object.keys(distMap).map(Number).sort((a, b) => a - b);
+  let distHtml = '';
+  for (const k of distKeys) {
+    const color = k >= 7 ? 'var(--red)' : k >= 5 ? 'var(--yellow)' : 'var(--accent)';
+    distHtml += `<div style="background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:6px;padding:8px;text-align:center;">
+      <div style="font-size:0.7rem;font-weight:700;color:${color};">${k}</div>
+      <div style="font-size:0.5rem;color:var(--muted);margin-top:2px;">×${distMap[k]}</div>
+    </div>`;
+  }
+  distGrid.innerHTML = distHtml;
+}
+</script>
+</body>
+</html>
