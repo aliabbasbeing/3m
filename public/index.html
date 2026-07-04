@@ -170,85 +170,12 @@
       text-align: center;
       filter: drop-shadow(0 1px 6px #22c55e44);
     }
-    /* Welcome Modal */
-    #welcomeModal {
-      transition: opacity 0.5s;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 60;
-    }
-    #welcomeModal.show {
-      opacity: 1 !important;
-      pointer-events: auto !important;
-    }
-    #welcomeModal .modal-box {
-      background: rgba(34,38,70,0.99);
-      border-radius: 2rem;
-      box-shadow: 0 0 40px #222a, 0 0 0 3px #818cf8;
-      padding: 2.5rem 2rem 2rem 2rem;
-      min-width: 320px;
-      max-width: 94vw;
-      text-align: center;
-      color: #f3f4f6;
-      border: 1.5px solid #818cf8;
-    }
-    #welcomeModal .modal-title {
-      font-size: 2rem;
-      font-weight: bold;
-      color: #22c55e;
-      letter-spacing: .02em;
-      margin-bottom: 0.7em;
-    }
-    #welcomeModal .modal-sub {
-      color: #a7f3d0;
-      font-size: 1.2rem;
-      margin-bottom: .8em;
-    }
-    #welcomeModal .modal-body {
-      margin-bottom: 1.2em;
-      color: #cbd5e1;
-      font-size: 1.06rem;
-    }
-    #welcomeModal .modal-donate {
-      margin: 1.2em 0 0.7em 0;
-      color: #f59e42;
-      font-size: 1.14rem;
-      font-weight: 500;
-      letter-spacing: 0.01em;
-    }
-    #welcomeModal .whatsapp {
-      color: #25d366;
-      font-weight: bold;
-      margin-top: 0.6em;
-      font-size: 1.2em;
-    }
-    #welcomeModal .close-btn {
-      margin-top: 1.4em;
-      background: #818cf8;
-      color: #fff;
-      padding: 0.6em 1.7em;
-      border-radius: 1.1em;
-      font-size: 1.08em;
-      font-weight: 600;
-      border: none;
-      box-shadow: 0 3px 18px #23294666;
-      transition: background 0.15s;
-      cursor: pointer;
-    }
-    #welcomeModal .close-btn:hover {
-      background: #22c55e;
-      color: #fff;
-    }
     @media (max-width: 640px) {
       .glass { padding: 0.5rem !important; }
       .glow-container { padding: 8px 7px 7px 8px; }
       .glow-right { right: 9px; top: 40px; }
       #winModal .trophy-glow { font-size: 3.7rem; }
       #winModal .modal-celebrate-text { font-size: 1.25rem; }
-      #welcomeModal .modal-box { min-width: 90vw; padding: 1.4rem 0.6rem 1.2rem 0.6rem; }
-      #welcomeModal .modal-title { font-size: 1.3rem; }
-      #welcomeModal .modal-sub { font-size: 1.07rem; }
-      #welcomeModal .modal-donate { font-size: 1rem; }
     }
 
     /* MARTINGALE TRACKER */
@@ -1105,10 +1032,6 @@
               <i class="fa-solid fa-user-astronaut text-indigo-400 h-7 w-7 text-2xl"></i>
               <span class="text-lg font-semibold text-indigo-200">Made by Ali Abbas</span>
             </div>
-            <span class="text-xs text-neutral-400 mb-1">WhatsApp</span>
-            <a href="https://wa.me/923483469617" target="_blank" class="text-sm font-mono text-green-400 hover:underline hover:text-green-300 transition">
-              +92 348 3469617
-            </a>
           </div>
         </div>
       </div>
@@ -1119,20 +1042,6 @@
       <div class="flex flex-col items-center justify-center">
         <i class="fa-solid fa-trophy trophy-glow"></i>
         <span class="modal-celebrate-text">Congratulations<br>You Won!</span>
-      </div>
-    </div>
-
-    <!-- Welcome Modal -->
-    <div id="welcomeModal" class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none">
-      <div class="modal-box flex flex-col items-center justify-center">
-        <span class="modal-title"><i class="fa-solid fa-crown text-yellow-400 mr-2"></i>92pkr Hack</span>
-        <div class="modal-sub">Developed by <span style="color:#4fd1c5">Ali Abbas</span></div>
-        <div class="modal-body">
-          <p>This hack is provided free for the benefit of users.<br>
-          For support, tips, or custom developments, contact me on WhatsApp below.</p>
-        </div>
-        <a href="https://wa.me/923483469617" target="_blank" class="whatsapp flex items-center gap-2"><i class="fab fa-whatsapp"></i>+92 348 3469617</a>
-        <button class="close-btn mt-4" id="closeWelcomeBtn"><i class="fa-solid fa-check mr-2"></i>Continue</button>
       </div>
     </div>
 
@@ -1897,27 +1806,9 @@ document.getElementById('notifyTopicInput').addEventListener('input', function()
 });
 
 // ══════════════════════════════════════════════════════════
-//  WELCOME MODAL
+//  STARTUP
 // ══════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
-  const WELCOME_KEY = '92pkr-welcome-modal-last-shown';
-  const WELCOME_INTERVAL = 30 * 60 * 1000;
-  try {
-    const lastShown = localStorage.getItem(WELCOME_KEY);
-    const now = Date.now();
-    if (!lastShown || (now - parseInt(lastShown)) >= WELCOME_INTERVAL) {
-      document.getElementById('welcomeModal').classList.add('show');
-      document.body.style.overflow = 'hidden';
-      localStorage.setItem(WELCOME_KEY, now.toString());
-    }
-  } catch(e) {
-    document.getElementById('welcomeModal').classList.add('show');
-    document.body.style.overflow = 'hidden';
-  }
-  document.getElementById('closeWelcomeBtn').onclick = function() {
-    document.getElementById('welcomeModal').classList.remove('show');
-    document.body.style.overflow = '';
-  };
   loadNotifyConfig();
   // Start WebSocket connection
   connectWebSocket();
